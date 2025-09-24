@@ -1,0 +1,1415 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 33328743056015000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6411307155,
+          6.1582124631
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:48:30Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Calle 79 Sur / Carrera 59",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Calle 79 Sur / Carrera 59",
+        "isTrafficJam": true,
+        "delay": 61,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.64135468,
+            6.1574211933
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33331628572013000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6356965601,
+          6.1581789622
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:06:30Z",
+        "endTime": "2025-08-19T23:17:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 79 Sur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 79 Sur",
+        "isTrafficJam": true,
+        "delay": 235,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6371731161,
+            6.1604239287
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33334514100013000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6246485411,
+          6.1636841507
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:56:00Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Carrera 53A",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Carrera 53A",
+        "isTrafficJam": true,
+        "delay": 146,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6224088966,
+            6.1633931466
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399496026000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.613841921,
+          6.155225799
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:56:00Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 60 Sur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 60 Sur",
+        "isTrafficJam": true,
+        "delay": 128,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6163162588,
+            6.1545445282
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399816010000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6136675774,
+          6.1699068674
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:29:00Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Carrera 50",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Carrera 50",
+        "isTrafficJam": true,
+        "delay": 79,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6138687431,
+            6.1704124516
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399664042000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6126148104,
+          6.1601570899
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T21:29:30Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 60 Sur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 60 Sur",
+        "isTrafficJam": true,
+        "delay": 226,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.614509791,
+            6.1624369652
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399776014000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6122017502,
+          6.1725556165
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:41:00Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 47",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 47",
+        "isTrafficJam": true,
+        "delay": 135,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6138218044,
+            6.1718247014
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399748012000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6120515465,
+          6.175295435
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T20:55:30Z",
+        "endTime": "2025-08-19T23:44:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 47C",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 47C",
+        "isTrafficJam": true,
+        "delay": 725,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6118892728,
+            6.1717375349
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399780010000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6092513203,
+          6.1729766985
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T16:06:30Z",
+        "endTime": "2025-08-19T23:19:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 51",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 51",
+        "isTrafficJam": true,
+        "delay": 666,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6165764331,
+            6.1695300331
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399628049000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6088717877,
+          6.1665460994
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:45:30Z",
+        "endTime": "2025-08-20T00:30:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Autosur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Autosur",
+        "isTrafficJam": true,
+        "delay": 258,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6143542229,
+            6.1626958027
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33340285068013000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6132692694,
+          6.1748206886
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:19:30Z",
+        "endTime": "2025-08-19T23:44:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 46A",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 46A",
+        "isTrafficJam": true,
+        "delay": 923,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6079437434,
+            6.1681647774
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399780004000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.60772112,
+          6.1746047734
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:37:30Z",
+        "endTime": "2025-08-19T23:41:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 53A",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 53A",
+        "isTrafficJam": true,
+        "delay": 808,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.612429738,
+            6.1732877806
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399740014000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6084506809,
+          6.1733682803
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:42:30Z",
+        "endTime": "2025-08-19T23:20:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Carrera 51",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Carrera 51",
+        "isTrafficJam": true,
+        "delay": 233,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.606797099,
+            6.16959845
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399632017000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6067702769,
+          6.1679193593
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:35:00Z",
+        "endTime": "2025-08-20T00:33:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Autosur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Autosur",
+        "isTrafficJam": true,
+        "delay": 424,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6143113076,
+            6.1625737174
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33337399632014000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.6061721443,
+          6.1715846184
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:37:00Z",
+        "endTime": "2025-08-19T23:55:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Carrera 50 / Calle 54",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Carrera 50 / Calle 54",
+        "isTrafficJam": true,
+        "delay": 862,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6146599948,
+            6.1676873579
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33340285084010000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.603755474,
+          6.1615035325
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:52:00Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Las Lomitas",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Las Lomitas",
+        "isTrafficJam": true,
+        "delay": 60,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.603319615,
+            6.1611361091
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33340285120010000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5977996289,
+          6.162259879
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:04:00Z",
+        "endTime": "2025-08-19T23:45:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 48C Sur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 48C Sur",
+        "isTrafficJam": true,
+        "delay": 676,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6047224103,
+            6.1593872402
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33340285244201000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5959100126,
+          6.1757447646
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:56:00Z",
+        "endTime": "2025-08-20T00:30:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Entrada A La Autosur",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Entrada A La Autosur",
+        "isTrafficJam": true,
+        "delay": 269,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6075749396,
+            6.1674982733
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33340285488012000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5961152016,
+          6.1905652592
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:29:30Z",
+        "endTime": "2025-08-19T23:27:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Carrera 55",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Carrera 55",
+        "isTrafficJam": true,
+        "delay": 479,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5947244762,
+            6.1899027832
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33340284960026000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5941719412,
+          6.1717147016
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:17:00Z",
+        "endTime": "2025-08-19T23:41:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 37 Sur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 37 Sur",
+        "isTrafficJam": true,
+        "delay": 861,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6090729534,
+            6.1581923792
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343170532007000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5952917634,
+          6.1662630969
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:51:30Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Carrera 44A / Carrera 46A",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Carrera 44A / Carrera 46A",
+        "isTrafficJam": true,
+        "delay": 221,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5941598712,
+            6.1654799226
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343171136050000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5934303104,
+          6.1912304842
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:37:30Z",
+        "endTime": "2025-08-19T23:39:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Carrera 52",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Carrera 52",
+        "isTrafficJam": true,
+        "delay": 344,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.6002659201,
+            6.1826259089
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343170960007000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5940981804,
+          6.1933480659
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:39:00Z",
+        "endTime": "2025-08-19T23:17:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Carrera 54",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Carrera 54",
+        "isTrafficJam": true,
+        "delay": 268,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5929475128,
+            6.1918540434
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343170856010000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5921991765,
+          6.1792195557
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:56:00Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Ruta Nacional Vía 25",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Ruta Nacional Vía 25",
+        "isTrafficJam": true,
+        "delay": 74,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5929823815,
+            6.1783370686
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343170816015000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.591744542,
+          6.1782794027
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:54:30Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Slow traffic Regional",
+        "severity": 1,
+        "isRoadClosed": false,
+        "title": "Regional",
+        "isTrafficJam": true,
+        "delay": 90,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5900721847,
+            6.1771045841
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343171168014000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5900158583,
+          6.1975202069
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:37:30Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Carrera 52",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Carrera 52",
+        "isTrafficJam": true,
+        "delay": 115,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5919966697,
+            6.1980861783
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343170992066002,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5896457135,
+          6.1984509928
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:37:30Z",
+        "endTime": "2025-08-19T23:39:00Z",
+        "lastModifiedTime": null,
+        "description": "Slow traffic Calle 11A Sur",
+        "severity": 1,
+        "isRoadClosed": false,
+        "title": "Calle 11A Sur",
+        "isTrafficJam": true,
+        "delay": 239,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5927798747,
+            6.191890292
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343171024014000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5889054238,
+          6.1927566738
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:12:30Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 85 / Carrera 48",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 85 / Carrera 48",
+        "isTrafficJam": true,
+        "delay": 253,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5915339886,
+            6.1930959098
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343170668012000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5921173691,
+          6.1701375345
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:25:00Z",
+        "endTime": "2025-08-19T23:18:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Carrera 48",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Carrera 48",
+        "isTrafficJam": true,
+        "delay": 255,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5882093905,
+            6.1682694446
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33340285100026000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5873001217,
+          6.1859062437
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T20:47:00Z",
+        "endTime": "2025-08-20T00:58:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Intercambio Vial La Ayurá",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Intercambio Vial La Ayurá",
+        "isTrafficJam": true,
+        "delay": 602,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.606078267,
+            6.1685992796
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343171172010001,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5871727168,
+          6.1969838168
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T21:59:00Z",
+        "endTime": "2025-08-19T23:17:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Entrada a La Calle 12S",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Entrada a La Calle 12S",
+        "isTrafficJam": true,
+        "delay": 280,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.58990857,
+            6.1977723609
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056180018000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5855043828,
+          6.1762945927
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:38:00Z",
+        "endTime": "2025-08-19T23:56:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Calle 30 Sur / Calle 30S",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Calle 30 Sur / Calle 30S",
+        "isTrafficJam": true,
+        "delay": 295,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5896457135,
+            6.1690686982
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056000012000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5921173691,
+          6.1723450337
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:40:00Z",
+        "endTime": "2025-08-19T23:32:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Carrera 48",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Carrera 48",
+        "isTrafficJam": true,
+        "delay": 449,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5853246747,
+            6.1682761113
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056164015000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.585571438,
+          6.1712909519
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:34:30Z",
+        "endTime": "2025-08-19T23:26:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Carrera 43A / Calle 35S",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Carrera 43A / Calle 35S",
+        "isTrafficJam": true,
+        "delay": 470,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5859389006,
+            6.1687012801
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343171132018001,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5844395458,
+          6.2027357534
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:47:30Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Calle 6 Sur / Carrera 6",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Calle 6 Sur / Carrera 6",
+        "isTrafficJam": true,
+        "delay": 187,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5854413508,
+            6.1970012326
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33343171328026000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5847184955,
+          6.1963695966
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T20:40:00Z",
+        "endTime": "2025-08-20T00:09:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 12 Sur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 12 Sur",
+        "isTrafficJam": true,
+        "delay": 1135,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5909157394,
+            6.2081953979
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056328015000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.583506137,
+          6.1862911495
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:53:00Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Carrera 48 / Calle 22S",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Carrera 48 / Calle 22S",
+        "isTrafficJam": true,
+        "delay": 73,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5833036303,
+            6.1853269263
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056040014000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5828248559,
+          6.1684290288
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:54:00Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Diagonal 31E",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Diagonal 31E",
+        "isTrafficJam": true,
+        "delay": 153,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5841149985,
+            6.1665890165
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056412013002,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5823514461,
+          6.1955514684
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:52:00Z",
+        "endTime": "2025-08-19T23:17:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Calle 12 Sur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Calle 12 Sur",
+        "isTrafficJam": true,
+        "delay": 202,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5818445086,
+            6.1957996235
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056392026000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5841176807,
+          6.18717229
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:54:00Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Intercambio Vial La Ayurá",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Intercambio Vial La Ayurá",
+        "isTrafficJam": true,
+        "delay": 139,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5813818275,
+            6.1942184452
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33348941504012000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5808145403,
+          6.1695421165
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:52:00Z",
+        "endTime": "2025-08-19T23:18:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Transversal 35A Sur",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Transversal 35A Sur",
+        "isTrafficJam": true,
+        "delay": 332,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5831279456,
+            6.1635071482
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056404013001,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5813818275,
+          6.1942184452
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:40:30Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Regional",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Regional",
+        "isTrafficJam": true,
+        "delay": 64,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5804966985,
+            6.1948540836
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33348941644020000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5805637537,
+          6.1761055112
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:49:30Z",
+        "endTime": "2025-08-19T23:16:00Z",
+        "lastModifiedTime": null,
+        "description": "Backed up traffic Transversal 32A Sur",
+        "severity": 2,
+        "isRoadClosed": false,
+        "title": "Transversal 32A Sur",
+        "isTrafficJam": true,
+        "delay": 153,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5804913341,
+            6.1724416168
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056332018001,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5796357094,
+          6.1942707762
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T20:13:30Z",
+        "endTime": "2025-08-19T23:24:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Glorieta La Aguacatala",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Glorieta La Aguacatala",
+        "isTrafficJam": true,
+        "delay": 670,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5852227508,
+            6.1834788896
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056892234001,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5764747261,
+          6.2274778557
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T20:45:30Z",
+        "endTime": "2025-08-20T00:58:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Carrera 51c / Calle 30",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Carrera 51c / Calle 30",
+        "isTrafficJam": true,
+        "delay": 1345,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5834511518,
+            6.1896935406
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056888585000,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5784595608,
+          6.2415540778
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T22:41:30Z",
+        "endTime": "2025-08-20T00:30:00Z",
+        "lastModifiedTime": null,
+        "description": "Stopped traffic Autosur",
+        "severity": 3,
+        "isRoadClosed": false,
+        "title": "Autosur",
+        "isTrafficJam": true,
+        "delay": 1563,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5921991765,
+            6.1792195557
+          ]
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33346056072014001,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.5749405025,
+          6.1650225843
+        ]
+      },
+      "properties": {
+        "incidentType": "Congestion",
+        "startTime": "2025-08-19T21:44:30Z",
+        "endTime": "2025-08-19T23:21:00Z",
+        "lastModifiedTime": null,
+        "description": "Slow traffic Calle 36D Sur",
+        "severity": 1,
+        "isRoadClosed": false,
+        "title": "Calle 36D Sur",
+        "isTrafficJam": true,
+        "delay": 387,
+        "endPoint": {
+          "type": "Point",
+          "coordinates": [
+            -75.5875898003,
+            6.1705600351
+          ]
+        }
+      }
+    }
+  ]
+}

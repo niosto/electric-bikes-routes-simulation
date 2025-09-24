@@ -1,0 +1,128 @@
+{
+  "bbox": [
+    -75.585299,
+    6.207182,
+    -75.574395,
+    6.244633
+  ],
+  "routes": [
+    {
+      "summary": {
+        "distance": 4852.4,
+        "duration": 520.0
+      },
+      "segments": [
+        {
+          "distance": 4852.4,
+          "duration": 520.0,
+          "steps": [
+            {
+              "distance": 58.5,
+              "duration": 14.0,
+              "type": 11,
+              "instruction": "Head north on Carrera 50E",
+              "name": "Carrera 50E",
+              "way_points": [
+                0,
+                2
+              ]
+            },
+            {
+              "distance": 452.6,
+              "duration": 108.6,
+              "type": 0,
+              "instruction": "Turn left onto Calle 2",
+              "name": "Calle 2",
+              "way_points": [
+                2,
+                9
+              ]
+            },
+            {
+              "distance": 4120.8,
+              "duration": 344.5,
+              "type": 1,
+              "instruction": "Turn right onto Carrera 52",
+              "name": "Carrera 52",
+              "way_points": [
+                9,
+                63
+              ]
+            },
+            {
+              "distance": 84.8,
+              "duration": 20.4,
+              "type": 1,
+              "instruction": "Turn right onto Calle 42C",
+              "name": "Calle 42C",
+              "way_points": [
+                63,
+                65
+              ]
+            },
+            {
+              "distance": 135.6,
+              "duration": 32.6,
+              "type": 0,
+              "instruction": "Turn left onto Carrera 53A",
+              "name": "Carrera 53A",
+              "way_points": [
+                65,
+                66
+              ]
+            },
+            {
+              "distance": 0.0,
+              "duration": 0.0,
+              "type": 10,
+              "instruction": "Arrive at Carrera 53A, on the right",
+              "name": "-",
+              "way_points": [
+                66,
+                66
+              ]
+            }
+          ]
+        }
+      ],
+      "bbox": [
+        -75.585299,
+        6.207182,
+        -75.574395,
+        6.244633
+      ],
+      "geometry": "{i{d@n~hlMwAKOAc@lF_@hECXOnBKp@u@~CCL_EoAqC_AeEyBg@YsEcCsBiAyAs@cL}FmAWsASwB_@uFy@kImAo@KuDi@qCg@wDeA}HsBsFyAk@OYIeD}@qGcBmA[iCk@gAGiAFuARwEv@}@HwBJcBBkAAiBK{AQSEcDk@eDo@]Gg@SOIwCaB{@c@q@UmGmAkC]u@Iy@EiAEeCCaCCuB@iBK_AC@iAMmAsFI",
+      "way_points": [
+        0,
+        66
+      ]
+    }
+  ],
+  "metadata": {
+    "attribution": "openrouteservice.org | OpenStreetMap contributors",
+    "service": "routing",
+    "timestamp": 1755238832632,
+    "query": {
+      "coordinates": [
+        [
+          -75.5815758017,
+          6.2072109705
+        ],
+        [
+          -75.5738991894,
+          6.2446141258
+        ]
+      ],
+      "profile": "driving-car",
+      "profileName": "driving-car",
+      "format": "json",
+      "instructions": true
+    },
+    "engine": {
+      "version": "9.3.0",
+      "build_date": "2025-06-06T15:39:25Z",
+      "graph_date": "2025-08-04T13:04:13Z",
+      "osm_date": "1970-01-01T00:00:00Z"
+    }
+  }
+}
