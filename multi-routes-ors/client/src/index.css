@@ -1,0 +1,103 @@
+/* ==== base obligatoria para que el mapa ocupe todo === */
+html, body, #root { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+
+/* quita el tema oscuro de la plantilla de Vite */
+body { background: #fff; color: #111; }
+
+/* ===== layout de app ===== */
+.app-shell {
+  display: grid;
+  grid-template-rows: 56px 1fr; /* barra arriba + contenido */
+  height: 100%;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+
+/* top bar */
+.topnav {
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 16px; border-bottom: 1px solid #e5e7eb; background: #fff;
+}
+.topnav .brand { font-weight: 800; }
+.topnav .tabs { display: flex; gap: 12px; }
+.topnav .tab { padding: 8px 10px; border-radius: 8px; color: #374151; }
+.topnav .tab.active { background: #eef2ff; color: #111827; }
+
+/* ===== página del mapa: 2 columnas ===== */
+.page {
+  height: calc(100vh - 56px);       /* ocupa todo menos la barra */
+  display: grid;
+  grid-template-columns: 320px 1fr; /* panel izq + mapa der */
+}
+
+/* panel lateral */
+.sidebar {
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  overflow: auto;
+  padding: 12px;
+}
+.row { display: flex; gap: 8px; margin: 6px 0; flex-wrap: wrap; }
+.mt8 { margin-top: 8px; }
+.small { font-size: 13px; color: #333; }
+button { cursor: pointer; }
+
+/* ===== contenedor del mapa ===== */
+.map-wrapper { position: relative; height: calc(100vh - 56px); }
+.map-root    { height: 100%; width: 100%; }  /* hoja de Leaflet */
+
+/* panel de coordenadas centrado arriba */
+.coords-panel {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 1000; background: rgba(255,255,255,0.97);
+  border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; width: 320px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.coords-header { font-weight: 700; margin-bottom: 6px; text-align: center; }
+.coords-last { margin-bottom: 6px; text-align: center; }
+.coords-last-title { font-size: 12px; color: #555; }
+.coords-list-title { font-weight: 600; margin: 6px 0 4px; }
+.coords-empty { font-size: 12px; color: #777; }
+.coords-list { max-height: 160px; overflow: auto; }
+.coords-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.coords-index { width: 18px; color: #555; text-align: right; }
+.coords-code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
+.coords-x { margin-left: auto; border: none; background: transparent; font-size: 16px; line-height: 1; color: #999; cursor: pointer; }
+.coords-x:hover { color: #e11d48; }
+.coords-actions { display: flex; justify-content: flex-end; margin-top: 6px; }
+
+/* badges */
+.badge { font-size: 11px; border-radius: 8px; padding: 1px 6px; border: 1px solid #d1d5db; background: #f3f4f6; }
+.badge-start { background: #ecfeff; border-color: #06b6d4; }
+.badge-end   { background: #fff7ed; border-color: #f97316; }
+.badge-mid   { background: #eef2ff; border-color: #6366f1; }
+
+/* --- panel bonito --- */
+.card{
+  background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+}
+.panel-title{font-size:24px;font-weight:800;margin:4px 0 10px}
+.kv{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+.kv .k{font-size:13px;color:#6b7280}
+.kv .v{font-size:13px;color:#111}
+
+.divider{height:1px;background:#eee;margin:10px 0}
+
+.switch-row{display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+.switch-row input{margin-top:4px}
+.switch-label .label{font-weight:600}
+.switch-label .hint{display:block;font-size:12px;color:#6b7280;margin-top:2px}
+
+.select{padding:6px 8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+
+.btn{
+  padding:6px 10px;border:1px solid #d1d5db;border-radius:10px;background:#fff;cursor:pointer;
+}
+.btn:hover{background:#f9fafb}
+.btn.ghost{background:#f8fafc}
+.btn.primary{background:#111827;color:#fff;border-color:#111827}
+.btn.primary:hover{background:#0b1220}
+
+.total{margin-top:10px;font-size:13px;color:#374151}
+.total strong{margin-left:6px}
