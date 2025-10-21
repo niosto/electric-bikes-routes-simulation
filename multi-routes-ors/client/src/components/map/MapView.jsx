@@ -126,8 +126,8 @@ export default function MapView({
               const color = importedColorMap.get(vid) || "#6b7280";
               return {
                 color,
-                weight: 4,
-                opacity: 0.95,
+                weight: 6,
+                opacity: 1.0,
               };
             }}
           />
