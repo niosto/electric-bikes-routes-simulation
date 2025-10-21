@@ -124,7 +124,7 @@ export default function TelemetryPage() {
             lat: Number(p.latitude),
             lng: Number(p.longitude),
             alt: Number(p.altitude),
-            speed_kmh: Number.isFinite(Number(p.speed)) ? Number(p.speed) * 3.6 : null,
+            speed_kmh: Number.isFinite(Number(p.speed)) ? Number(p.speed) : null,
             power_kW: Number.isFinite(Number(p.pw)) ? Number(p.pw) : null,
             t_epoch: parseFechaToEpochSeconds(p.fecha),
           }));
