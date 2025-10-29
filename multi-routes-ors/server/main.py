@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 import httpx
+import json
 
 load_dotenv()
 
@@ -50,6 +51,15 @@ class RoutesRequest(BaseModel):
 def health():
     return {"ok": True, "provider": "ors", "has_token": bool(ORS_TOKEN)}
 
+@app.get("/estaciones")
+async def estaciones():
+    try:
+        with open("resources/estaciones_med.json","r") as f:
+            estaciones_med = json.load(f)
+            return estaciones_med
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Error: {e}")
+
 # =================== HELPERS ===================
 PROFILE_MAP = {
     "driving": "driving-car",
@@ -86,7 +96,7 @@ async def _fetch_ors_route(
 ) -> Dict[str, Any]:
     headers = {"Authorization": token, "Content-Type": "application/json"}
 
-    coords2d = _to2d(coords)  # 👈 fuerza 2D SIEMPRE
+    coords2d = _to2d(coords)  # fuerza 2D SIEMPRE
 
     data: Dict[str, Any] = {
         "coordinates": coords2d,
@@ -122,6 +132,10 @@ async def _fetch_ors_route(
         raise HTTPException(status_code=resp.status_code, detail=err)
 
     gj = resp.json()
+
+    with open ("resources/petition.json","w") as f:
+        json.dump(gj,f,indent=2)
+
     feats = gj.get("features", []) or []
     if not feats:
         return {"geometry": {"type": "LineString", "coordinates": []}, "summary": {}, "alternatives": []}
@@ -172,6 +186,14 @@ async def routes(body: RoutesRequest):
                 raise HTTPException(status_code=502, detail=f"Error de red ORS: {e!s}")
 
             out.append({"vehicle_id": v.vehicle_id, **r})
+
+    with open("resources/ejemplo.json","w") as f:
+        json.dump(out,f,indent=2)
+
+    bodj = json.loads(body.model_dump_json(indent=2))
+    
+    with open("resources/ejemplo_body.json","w") as f:
+        json.dump(bodj,f,indent=2)
 
     return {"routes": out}
 
