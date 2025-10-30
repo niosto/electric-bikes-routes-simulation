@@ -3,7 +3,6 @@ import polyline
 import math
 from openrouteservice import convert
 from geopy.distance import geodesic
-from main import _fetch_ors_route
 
 # lon, lat format
 def get_route(coords,api_key):
@@ -167,10 +166,8 @@ def get_vel_azure(features,elevation_data):
 def get_vel(steps, elevation_data):
     route = {
         "coords": [],        # [lng, lat, alt] format
-        "speed_ms": [],      # Speed in m/s
-        "slope_deg": [],     # Slope in degrees
-        "time": [],          # Cumulative time in seconds
-        "distance": []       # Cumulative distance in meters
+        "speeds": [],      # Speed in m/s
+        "slopes": []    # Slope in degrees
     }
     
     total_time = 0
@@ -210,10 +207,8 @@ def get_vel(steps, elevation_data):
             speed_ms = (distance_per_point / duration_per_point) if duration_per_point != 0 else 0
 
             route["coords"].append([lng, lat, alt])
-            route["speed_ms"].append(round(speed_ms, 2))
-            route["slope_deg"].append(round(slope_deg, 2))
-            route["time"].append(round(total_time, 2))
-            route["distance"].append(round(total_distance, 2))
+            route["speeds"].append(round(speed_ms, 2))
+            route["slopes"].append(round(slope_deg, 2))
 
             total_time += duration_per_point
             total_distance += distance_per_point
@@ -225,10 +220,8 @@ def get_vel(steps, elevation_data):
                 slope_deg = math.degrees(math.atan2(delta_alt, horiz_dist)) if horiz_dist != 0 else 0
 
                 route["coords"].append([lng, lat, alt])
-                route["speed_ms"].append(round(speed_ms, 2))
-                route["slope_deg"].append(round(slope_deg, 2))
-                route["time"].append(round(total_time, 2))
-                route["distance"].append(round(total_distance, 2))
+                route["speeds"].append(round(speed_ms, 2))
+                route["slopes"].append(round(slope_deg, 2))
 
     return route
 

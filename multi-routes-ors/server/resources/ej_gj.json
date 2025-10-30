@@ -1,0 +1,220 @@
+{
+  "bbox": [
+    -75.586101,
+    6.243119,
+    1474.0,
+    -75.582069,
+    6.247645,
+    1486.0
+  ],
+  "type": "Feature",
+  "properties": {
+    "ascent": 22.5,
+    "descent": 23.0,
+    "segments": [
+      {
+        "distance": 883.5,
+        "duration": 121.8,
+        "steps": [
+          {
+            "distance": 23.3,
+            "duration": 6.6,
+            "type": 11,
+            "instruction": "Head southwest on Carrera 66B",
+            "name": "Carrera 66B",
+            "way_points": [
+              0,
+              2
+            ]
+          },
+          {
+            "distance": 372.0,
+            "duration": 45.6,
+            "type": 6,
+            "instruction": "Continue straight onto Carrera 66B",
+            "name": "Carrera 66B",
+            "way_points": [
+              2,
+              9
+            ]
+          },
+          {
+            "distance": 259.3,
+            "duration": 30.9,
+            "type": 0,
+            "instruction": "Turn left onto Carrera 65",
+            "name": "Carrera 65",
+            "way_points": [
+              9,
+              15
+            ]
+          },
+          {
+            "distance": 156.0,
+            "duration": 25.8,
+            "type": 1,
+            "instruction": "Turn right onto Calle 43",
+            "name": "Calle 43",
+            "way_points": [
+              15,
+              18
+            ]
+          },
+          {
+            "distance": 34.6,
+            "duration": 8.3,
+            "type": 1,
+            "instruction": "Turn right onto Carrera 63D",
+            "name": "Carrera 63D",
+            "way_points": [
+              18,
+              19
+            ]
+          },
+          {
+            "distance": 38.3,
+            "duration": 4.6,
+            "type": 1,
+            "instruction": "Turn right onto Carrera 63D",
+            "name": "Carrera 63D",
+            "way_points": [
+              19,
+              20
+            ]
+          },
+          {
+            "distance": 0.0,
+            "duration": 0.0,
+            "type": 10,
+            "instruction": "Arrive at Carrera 63D, on the right",
+            "name": "-",
+            "way_points": [
+              20,
+              20
+            ]
+          }
+        ],
+        "ascent": 22.5,
+        "descent": 23.0
+      }
+    ],
+    "way_points": [
+      0,
+      20
+    ],
+    "summary": {
+      "distance": 883.5,
+      "duration": 121.8
+    }
+  },
+  "geometry": {
+    "coordinates": [
+      [
+        -75.585951,
+        6.243258,
+        1478.5
+      ],
+      [
+        -75.586011,
+        6.243198,
+        1482.0
+      ],
+      [
+        -75.586101,
+        6.243119,
+        1482.0
+      ],
+      [
+        -75.585945,
+        6.24312,
+        1482.0
+      ],
+      [
+        -75.585496,
+        6.243562,
+        1475.0
+      ],
+      [
+        -75.585068,
+        6.244002,
+        1475.0
+      ],
+      [
+        -75.584643,
+        6.244417,
+        1479.0
+      ],
+      [
+        -75.584139,
+        6.244933,
+        1479.0
+      ],
+      [
+        -75.583706,
+        6.245376,
+        1479.0
+      ],
+      [
+        -75.583688,
+        6.245388,
+        1479.0
+      ],
+      [
+        -75.583737,
+        6.245475,
+        1479.0
+      ],
+      [
+        -75.583817,
+        6.24564,
+        1479.0
+      ],
+      [
+        -75.583855,
+        6.245789,
+        1477.6
+      ],
+      [
+        -75.583865,
+        6.245902,
+        1476.0
+      ],
+      [
+        -75.583663,
+        6.246838,
+        1486.0
+      ],
+      [
+        -75.583489,
+        6.247645,
+        1476.0
+      ],
+      [
+        -75.583354,
+        6.247629,
+        1476.0
+      ],
+      [
+        -75.58262,
+        6.247542,
+        1474.0
+      ],
+      [
+        -75.582086,
+        6.247492,
+        1479.0
+      ],
+      [
+        -75.582069,
+        6.247181,
+        1479.0
+      ],
+      [
+        -75.582311,
+        6.246935,
+        1478.0
+      ]
+    ],
+    "type": "LineString"
+  }
+}

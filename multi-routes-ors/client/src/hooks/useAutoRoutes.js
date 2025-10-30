@@ -7,7 +7,7 @@ export default function useAutoRoutes({ vehicles, enabled = true }) {
   const [options, setOptions] = useState({
     profile: "driving",
     alternatives: false, // fijo en tu caso
-    steps: false,        // fijo en tu caso
+    steps: true,        // fijo en tu caso
     geometries: "geojson",
     alt_count: 1,
     alt_share: 0.6,
@@ -63,7 +63,7 @@ export default function useAutoRoutes({ vehicles, enabled = true }) {
     abortRef.current = ctrl;
 
     // Forzar opciones a una sola ruta sin pasos
-    const safeOptions = { ...options, alternatives: false, steps: false };
+    const safeOptions = { ...options, alternatives: false, steps: true };
 
     const data = await api.postRoutesJSON(
       { options: safeOptions, vehicles: ready },

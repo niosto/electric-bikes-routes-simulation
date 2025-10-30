@@ -3,7 +3,10 @@ from typing import List, Dict, Any, Tuple
 from fastapi import FastAPI, HTTPException, Path, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from ors_routes import _fetch_ors_route, _to2d
+
 from dotenv import load_dotenv
+from consume import moto_consume
 import httpx
 import json
 
@@ -60,108 +63,19 @@ async def estaciones():
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error: {e}")
 
-# =================== HELPERS ===================
-PROFILE_MAP = {
-    "driving": "driving-car",
-    "walking": "foot-walking",
-    "cycling": "cycling-regular",
-}
-
-def _to2d(coords):
-    """
-    Acepta puntos [lon,lat] o [lon,lat,alt] y devuelve solo [lon,lat].
-    Filtra puntos inválidos.
-    """
-    out = []
-    for pt in coords:
-        if isinstance(pt, (list, tuple)) and len(pt) >= 2:
-            try:
-                out.append([float(pt[0]), float(pt[1])])
-            except Exception:
-                continue
-    return out
-
-async def _fetch_ors_route(
-    client: httpx.AsyncClient,
-    token: str,
-    profile_key: str,
-    coords: List[Tuple[float, float]],
-    steps: bool,
-    geometries: str,
-    exclude: List[str],
-    want_alternatives: bool = False,
-    alt_count: int = 3,
-    alt_share: float = 0.6,
-    alt_weight: float = 1.4,
-) -> Dict[str, Any]:
-    headers = {"Authorization": token, "Content-Type": "application/json"}
-
-    coords2d = _to2d(coords)  # fuerza 2D SIEMPRE
-
-    data: Dict[str, Any] = {
-        "coordinates": coords2d,
-        "instructions": steps,
-        "geometry": geometries == "geojson",
-        "extra_info": [],
-        "preference": "fastest",
-        "options": {},
-    }
-    if exclude:
-        data["options"]["avoid_features"] = exclude
-
-    if want_alternatives:
-        data["alternative_routes"] = {
-            "target_count": max(1, int(alt_count)),
-            "share_factor": float(alt_share),
-            "weight_factor": float(alt_weight),
-        }
-
-    profile = PROFILE_MAP.get(profile_key, "driving-car")
-    url = f"https://api.openrouteservice.org/v2/directions/{profile}/geojson"
-
-    resp = await client.post(url, headers=headers, json=data)
-    if resp.status_code >= 400:
-        try:
-            print("ORS ERROR:", resp.status_code, resp.text[:500])
-        except Exception:
-            pass
-        try:
-            err = resp.json()
-        except Exception:
-            err = {"message": resp.text}
-        raise HTTPException(status_code=resp.status_code, detail=err)
-
-    gj = resp.json()
-
-    with open ("resources/petition.json","w") as f:
-        json.dump(gj,f,indent=2)
-
-    feats = gj.get("features", []) or []
-    if not feats:
-        return {"geometry": {"type": "LineString", "coordinates": []}, "summary": {}, "alternatives": []}
-
-    principal = feats[0]
-    alts = feats[1:]
-
-    def pick(feat):
-        return {
-            "geometry": feat.get("geometry", {}),
-            "summary": (feat.get("properties", {}) or {}).get("summary", {}),
-        }
-
-    return {
-        **pick(principal),
-        "alternatives": [pick(f) for f in alts],
-    }
-
 # =================== RUTAS: JSON simple ===================
 @app.post("/routes")
 async def routes(body: RoutesRequest):
+
+
+    idx = 1
+
     if not ORS_TOKEN:
         raise HTTPException(status_code=500, detail="ORS_TOKEN no configurado en .env")
-
+    
     out: List[Dict[str, Any]] = []
     async with httpx.AsyncClient(timeout=30) as client:
+
         for v in body.vehicles:
             if len(v.waypoints) < 2:
                 continue
@@ -182,18 +96,25 @@ async def routes(body: RoutesRequest):
                     alt_share=body.options.alt_share,
                     alt_weight=body.options.alt_weight,
                 )
+
+                with open("resources/estaciones_med.json","r") as f:
+                    estaciones_med = json.load(f)
+
+
+                data = await moto_consume(r, estaciones_med, f"moto-{idx}", client, ORS_TOKEN, body.options.profile)
             except httpx.RequestError as e:
                 raise HTTPException(status_code=502, detail=f"Error de red ORS: {e!s}")
+            
+            idx += 1
 
-            out.append({"vehicle_id": v.vehicle_id, **r})
+            out.append({"vehicle_id": v.vehicle_id, **data})
+    # Guardar ejemplos
+    with open("resources/ej_out.json","w") as f:
+        json.dump(out, f, indent=2)
 
-    with open("resources/ejemplo.json","w") as f:
-        json.dump(out,f,indent=2)
-
-    bodj = json.loads(body.model_dump_json(indent=2))
-    
-    with open("resources/ejemplo_body.json","w") as f:
-        json.dump(bodj,f,indent=2)
+    # Guardar ejemplos
+    with open("resources/ej_body.json","w") as f:
+        json.dump(json.loads(body.model_dump_json()), f,indent=2)
 
     return {"routes": out}
 
@@ -226,7 +147,7 @@ async def routes_geojson(request: Request):
             geom = (feat or {}).get("geometry") or {}
             if geom.get("type") != "LineString":
                 continue
-            coords = _to2d(geom.get("coordinates") or [])  # 👈 2D
+            coords = _to2d(geom.get("coordinates") or [])  # 2D
             if len(coords) < 2:
                 continue
 

@@ -1,0 +1,31 @@
+{
+  "options": {
+    "profile": "driving",
+    "alternatives": false,
+    "steps": true,
+    "geometries": "geojson",
+    "exclude": [],
+    "alt_count": 1,
+    "alt_share": 0.6,
+    "alt_weight": 1.4
+  },
+  "vehicles": [
+    {
+      "vehicle_id": "moto-1",
+      "waypoints": [
+        {
+          "coordinates": [
+            -75.585936,
+            6.243243
+          ]
+        },
+        {
+          "coordinates": [
+            -75.582331,
+            6.246954
+          ]
+        }
+      ]
+    }
+  ]
+}
