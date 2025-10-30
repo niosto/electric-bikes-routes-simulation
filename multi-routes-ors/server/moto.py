@@ -79,6 +79,7 @@ class Moto:
         self.power.append(p_eb)
         self.positions.append(segment["coords"][self.idx_route])
 
+        print(self.battery_state)
         return True
 
     # -------------------------------------------------------

@@ -66,8 +66,6 @@ async def estaciones():
 # =================== RUTAS: JSON simple ===================
 @app.post("/routes")
 async def routes(body: RoutesRequest):
-
-
     idx = 1
 
     if not ORS_TOKEN:
@@ -100,7 +98,6 @@ async def routes(body: RoutesRequest):
                 with open("resources/estaciones_med.json","r") as f:
                     estaciones_med = json.load(f)
 
-
                 data = await moto_consume(r, estaciones_med, f"moto-{idx}", client, ORS_TOKEN, body.options.profile)
             except httpx.RequestError as e:
                 raise HTTPException(status_code=502, detail=f"Error de red ORS: {e!s}")
@@ -108,13 +105,8 @@ async def routes(body: RoutesRequest):
             idx += 1
 
             out.append({"vehicle_id": v.vehicle_id, **data})
-    # Guardar ejemplos
-    with open("resources/ej_out.json","w") as f:
-        json.dump(out, f, indent=2)
-
-    # Guardar ejemplos
-    with open("resources/ej_body.json","w") as f:
-        json.dump(json.loads(body.model_dump_json()), f,indent=2)
+    with open("resources/ej_out.json","w")as f:
+        json.dump({"routes": out},f,indent=2)
 
     return {"routes": out}
 

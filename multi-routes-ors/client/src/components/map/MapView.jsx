@@ -1,5 +1,6 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import L from "leaflet";
+import axios from "axios";
 import {
   MapContainer,
   TileLayer,
@@ -8,11 +9,13 @@ import {
   LayersControl,
   GeoJSON,
   useMapEvents,
+  Tooltip,
 } from "react-leaflet";
 import { COLORS } from "../../utils/colors.js";
 import { makeColoredIcon } from "../../utils/icons.js";
 import CoordsPanel from "./CoordsPanel.jsx";
 
+// ================== CONFIG ICONS ==================
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -27,6 +30,22 @@ function ClickToAdd({ onAdd }) {
   return null;
 }
 
+// Custom icon for charging stations
+const chargingIcon = new L.DivIcon({
+  className: "charging-station-icon",
+  html: `
+    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+      <!-- Circle background -->
+      <circle cx="18" cy="18" r="16" fill="#FFD700" stroke="#333" stroke-width="2" />
+      
+      <!-- Lightning bolt -->
+      <path d="M17 6 L9 20 H17 L13 30 L25 14 H17 Z" fill="white" stroke="#333" stroke-width="1.5" />
+    </svg>`,
+  iconSize: [32, 32],
+  iconAnchor: [16,16],
+});
+
+// ================== MAIN MAP COMPONENT ==================
 export default function MapView({
   vehicles,
   activeVehicle,
@@ -37,12 +56,39 @@ export default function MapView({
   clearWaypointsActive,
   selectedAlt = {},
   setSelectedAlt = () => {},
-  importedGeoJSON, // capa importada (solo pintar)
-  drawOnly = false, // evita ORS y clicks cuando hay archivo
+  importedGeoJSON,
+  drawOnly = false,
 }) {
   const center = [6.2442, -75.5812];
 
-  // Mapa de colores por vehicle_id en la capa importada
+  // ========= POIs / Charging Stations =========
+  const [chargingStations, setChargingStations] = useState([]);
+
+  useEffect(() => {
+    async function fetchStations() {
+      try {
+        const res = await axios.get("http://localhost:8000/estaciones");
+        const data = res.data;
+
+        if (data?.coords && data?.nombre) {
+          const merged = data.coords.map((c, i) => ({
+            name: data.nombre[i] || `Estación ${i + 1}`,
+            coordinates: c,
+          }));
+          setChargingStations(merged);
+        } else {
+          console.warn("Formato inesperado de estaciones:", data);
+        }
+      } catch (err) {
+        console.error("Error al cargar estaciones:", err);
+      }
+    }
+
+    fetchStations();
+  }, []);
+  // ============================================
+
+  // Mapa de colores para capas importadas
   const importedColorMap = useMemo(() => {
     const map = new Map();
     if (importedGeoJSON?.features?.length) {
@@ -61,6 +107,7 @@ export default function MapView({
     return map;
   }, [importedGeoJSON?.features?.length]);
 
+  // Iconos de marcadores por vehículo
   const markerIcons = useMemo(
     () =>
       vehicles.map((_, i) => ({
@@ -77,7 +124,6 @@ export default function MapView({
 
   return (
     <>
-      {/* CoordsPanel solo útil en modo manual */}
       {!drawOnly && (
         <CoordsPanel
           activeVehicleObj={vehicles[activeVehicle]}
@@ -94,7 +140,7 @@ export default function MapView({
 
       <MapContainer
         center={center}
-        zoom={16}
+        zoom={14}
         className="map-root"
         zoomControl
         preferCanvas
@@ -110,10 +156,9 @@ export default function MapView({
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        {/* Click para agregar puntos: SOLO en modo manual */}
         {!drawOnly && <ClickToAdd onAdd={handleAddWaypoint} />}
 
-        {/* Capa importada (solo pintar) con colores por vehicle_id */}
+        {/* Capa importada */}
         {importedGeoJSON?.features?.length > 0 && (
           <GeoJSON
             key="imported"
@@ -133,7 +178,7 @@ export default function MapView({
           />
         )}
 
-        {/* Marcadores de waypoints (solo en manual) */}
+        {/* Waypoints de vehículos */}
         {!drawOnly &&
           vehicles.map((v, vi) =>
             v.waypoints.map((wp, idx) => {
@@ -150,7 +195,7 @@ export default function MapView({
             })
           )}
 
-        {/* Polylines ORS (solo en manual) */}
+        {/* Polilíneas de rutas */}
         {!drawOnly &&
           vehicles.map((v, idx) => {
             const info = routes[v.id];
@@ -168,6 +213,19 @@ export default function MapView({
               />
             );
           })}
+
+        {/*Estaciones de carga */}
+        {chargingStations.map((station, idx) => (
+          <Marker
+            key={`station-${idx}`}
+            position={[station.coordinates[1], station.coordinates[0]]}
+            icon={chargingIcon}
+          >
+            <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+              <span>{station.name}</span>
+            </Tooltip>
+          </Marker>
+        ))}
       </MapContainer>
     </>
   );

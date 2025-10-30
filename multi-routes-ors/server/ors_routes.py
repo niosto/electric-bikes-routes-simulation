@@ -74,15 +74,10 @@ async def _fetch_ors_route(
 
     gj = resp.json()
 
-    #Guardar ejemplos
-
     feats = gj.get("features", []) or []
     if not feats:
         return {"geometry": {"type": "LineString", "coordinates": []}, "summary": {}, "alternatives": []}
 
     principal = feats[0]
     
-    with open("resources/ej_gj.json","w") as f:
-        json.dump(principal, f, indent=2)
-
     return principal
