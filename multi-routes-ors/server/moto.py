@@ -53,18 +53,19 @@ class Moto:
 
     def consume_step(self):
         hev = HEV()
-        vel = self.route_data[self.idx]["speeds"][self.idx_route]
-        theta = math.radians(self.route_data[self.idx]["slopes"][self.idx_route])
+
+        segment = self.route_data[self.idx]
+        if self.idx_route >= len(segment["coords"]):
+            return False  # reached end of this segment
+
+        vel = segment["speeds"][self.idx_route] 
+        theta = math.radians(segment["slopes"][self.idx_route])
 
         faero = 0.5 * hev.Ambient.rho * hev.Chassis.a * hev.Chassis.cd * (vel ** 2)
-
         froll = hev.Ambient.g * hev.Chassis.m * hev.Chassis.crr * math.cos(theta)
-
         fg = hev.Ambient.g * hev.Chassis.m * math.sin(theta)
-
-        prev_speed =  self.route_data[self.idx]["speeds"][self.idx_route-1] if self.idx_route > 0 else 0
-
-        f_inertia = hev.Chassis.m * (0 if self.idx_route <= 0 else ((vel - prev_speed) / 1.0))
+        v_prev = segment["speeds"][self.idx_route - 1] if self.idx_route > 0 else 0
+        f_inertia = hev.Chassis.m * (vel - v_prev)
 
         fres = faero + froll + fg + f_inertia
         p_m = fres * vel
@@ -72,21 +73,44 @@ class Moto:
         p_eb = max(0, p_m / (2.8 * eficiencia_tren))
         consumo_wh = p_eb / 3600.0
 
+        # update state
         self.battery_state = max(0, self.battery_state - consumo_wh)
         self.soc_history.append(self.battery_state)
         self.power.append(p_eb)
+        self.positions.append(segment["coords"][self.idx_route])
 
-        self.positions.append(self.route_data[self.idx]["coords"][self.idx_route])
+        return True
 
+    # -------------------------------------------------------
     def avanzar_paso(self):
-        self.consume_step()
+        # 1) Consume energy for this step
+        if not self.consume_step():
+            # reached end of current segment
+            self.duration += self.route_data[self.idx]["duration"]
+            self.distance += self.route_data[self.idx]["distance"]
 
-        # Battery check
+            self.idx += 1
+            self.idx_route = 0
+
+            # all segments done
+            if self.idx >= len(self.route_data):
+                return 0
+
+            # check charging after segment ends
+            if self.in_charge:
+                self.charge()
+
+            return 1
+
+        # 2) Check battery
         if self.battery_state < self.umbral_energia and not self.in_charge:
             self.in_charge = True
             return 3  # signal: low battery
 
-        if self.idx_route >= len(self.route_data[self.idx]["coords"][self.idx_route]):
+        # 3) advance step
+        self.idx_route += 1
+        return 1  # continue
+        if self.idx_route >= len(self.route_data[self.idx]["coords"]):
             self.duration += self.route_data[self.idx]["duration"]
             self.distance += self.route_data[self.idx]["distance"]
 
@@ -96,8 +120,16 @@ class Moto:
             if self.in_charge:
                 self.charge()
 
+        self.consume_step()
+
         if self.idx >= len(self.route_data):
             return 0  # finished
+        
+        # Battery check
+        if self.battery_state < self.umbral_energia and not self.in_charge:
+            self.in_charge = True
+            return 3  # signal: low battery
+
         
         self.idx_route += 1
         return 1  # continue

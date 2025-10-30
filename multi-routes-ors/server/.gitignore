@@ -2,3 +2,6 @@
 __pycache__/
 .env
 pruebas.ipynb
+resources/ej_body.json
+resources/ej_gj.json
+resources/ej_out.json
