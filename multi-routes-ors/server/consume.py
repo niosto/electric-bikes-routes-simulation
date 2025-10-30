@@ -19,20 +19,23 @@ async def moto_consume(rutas, estaciones, nombre, client, token, profile):
 
     while step_result != 0:
         if step_result == 3:
-            print("##$#$#$#$#$#$#$#$#$#$#$#$##$#$")
             # Battery low: reroute to nearest charging station
-            current_pos = moto.route_data[moto.idx]["coords"][moto.idx_route]
+            current_pos = moto.route_data[moto.idx]["coords"][moto.idx_route][:2]
+
             idx_est = moto.nearest_station(current_pos)
+
             station_coord = estaciones["coords"][idx_est]
-            destiny = moto.route_data[moto.idx]["coords"][-1]
+            destiny = moto.route_data[moto.idx]["coords"][-1][:2]
+
+            moto.add_charge_point(idx_est, current_pos)
 
             # Fetch route to station
             new_ors_route = await _fetch_ors_route(
-                client, token, profile, [[current_pos, station_coord],[station_coord, destiny]],
+                client, token, profile, [current_pos, station_coord, destiny],
                 steps=True, geometries="geojson", exclude=[]
             )
 
-            new_route = manage_segments(new_ors_route["features"][0])
+            new_route = manage_segments(new_ors_route)
 
             moto.change_route(new_route)
 

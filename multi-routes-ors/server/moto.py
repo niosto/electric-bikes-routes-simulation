@@ -8,9 +8,9 @@ class Moto:
         self.route_data = route_data
         self.stations = stations
         self.positions = []
-        self.battery_state = 700.0
+        self.battery_state = 300
         self.in_charge = False
-        self.umbral_energia = 0.2 * self.battery_state
+        self.umbral_energia = 0.9 * self.battery_state
         self.tiempo_recarga_total = 60
         self.energy_before_recarga = None
         self.idx = 0
@@ -24,13 +24,13 @@ class Moto:
         self.power = []
 
     def nearest_station(self, current_pos):
-        distancias = [geodesic(current_pos, coords).meters for coords in self.stations["coords"]]
+        distancias = [geodesic(current_pos[:2], coords).meters for coords in self.stations["coords"]]
         idx_est = distancias.index(min(distancias))
         return idx_est
 
     def add_charge_point(self, station_idx, current_pos):
         self.puntos_recarga_realizados.append({
-            "station_name": self.stations["name"][station_idx],
+            "station_name": self.stations["nombre"][station_idx],
             "station_coords": self.stations["coords"][station_idx],
             "start_coords": current_pos,
             "energy_charged": self.battery_state,
