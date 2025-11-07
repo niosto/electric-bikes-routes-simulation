@@ -8,9 +8,9 @@ class Moto:
         self.route_data = route_data
         self.stations = stations
         self.positions = []
-        self.battery_state = 300
+        self.battery_state = 700
         self.in_charge = False
-        self.umbral_energia = 0.9 * self.battery_state
+        self.umbral_energia = 0.95 * self.battery_state
         self.tiempo_recarga_total = 60
         self.energy_before_recarga = None
         self.idx = 0
