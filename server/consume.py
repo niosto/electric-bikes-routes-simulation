@@ -3,7 +3,7 @@ from petitions import get_vel
 from ors_routes import _fetch_ors_route, _to2d
 
 
-def manage_segments(rutas, traffic):
+def manage_segments(rutas):
     rutas_moto = []
     for segment in rutas["properties"]["segments"]:
         data = get_vel(segment["steps"], rutas["geometry"]["coordinates"])
