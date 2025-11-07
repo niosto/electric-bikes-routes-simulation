@@ -79,5 +79,8 @@ async def _fetch_ors_route(
         return {"geometry": {"type": "LineString", "coordinates": []}, "summary": {}, "alternatives": []}
 
     principal = feats[0]
+
+    with open("resources/examples/petition_raw_ors.json","w") as f:
+        json.dump(principal,f,indent=2)
     
     return principal

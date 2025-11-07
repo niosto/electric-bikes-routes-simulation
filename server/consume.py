@@ -2,7 +2,8 @@ from moto import Moto
 from petitions import get_vel
 from ors_routes import _fetch_ors_route, _to2d
 
-def manage_segments(rutas):
+
+def manage_segments(rutas, traffic):
     rutas_moto = []
     for segment in rutas["properties"]["segments"]:
         data = get_vel(segment["steps"], rutas["geometry"]["coordinates"])
@@ -12,8 +13,8 @@ def manage_segments(rutas):
     return rutas_moto
 
 async def moto_consume(rutas, estaciones, nombre, client, token, profile):
+    
     rutas_moto = manage_segments(rutas) 
-
     moto = Moto(nombre, rutas_moto, estaciones)
     step_result = moto.avanzar_paso()
 
@@ -54,5 +55,6 @@ async def moto_consume(rutas, estaciones, nombre, client, token, profile):
             "distance":moto.distance,
             "duration":moto.duration
         },
-        "alternatives":[]
+        "alternatives":[],
+        "charge_points": moto.puntos_recarga_realizados
     }

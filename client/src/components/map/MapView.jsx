@@ -213,6 +213,22 @@ export default function MapView({
               />
             );
           })}
+        {/* Puntos de carga */}
+        {!drawOnly &&
+          Object.entries(routes).map(([vehicleId, routeData], idx) => {
+            if (!routeData?.charge_points?.length) return null;
+
+            return routeData.charge_points.map((cp, i) => {
+              const [lon, lat] = cp.start_coords;
+              return (
+                <Marker
+                  key={`charge-${vehicleId}-${i}`}
+                  position={[lat, lon]}
+                  icon={makeColoredIcon("#7a318dff", i + 1, "normal")}
+                />
+              );
+            });
+        })}
 
         {/*Estaciones de carga */}
         {chargingStations.map((station, idx) => (

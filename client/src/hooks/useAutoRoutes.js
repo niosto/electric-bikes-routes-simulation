@@ -6,8 +6,8 @@ export default function useAutoRoutes({ vehicles, enabled = true }) {
   const [selectedAlt, setSelectedAlt] = useState({});
   const [options, setOptions] = useState({
     profile: "driving",
-    alternatives: false, // fijo en tu caso
-    steps: true,        // fijo en tu caso
+    alternatives: false, 
+    steps: true,        
     geometries: "geojson",
     alt_count: 1,
     alt_share: 0.6,

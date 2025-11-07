@@ -63,7 +63,7 @@ def get_opt_route(coords,time,api_key):
                 "pointType": point_type
             }
         })
-    date = "2025-09-01T" + time + "-05:00" 
+    date = "2025-10-30T" + time + "-05:00" 
 
     body = {
         "type": "FeatureCollection",
@@ -74,6 +74,8 @@ def get_opt_route(coords,time,api_key):
         "travelMode": "driving",
         "departAt": date
     }
+
+    print(body)
 
     url = "https://atlas.microsoft.com/route/directions"
     params = {"api-version": "2025-01-01"}
@@ -231,7 +233,7 @@ def route(coords, traffic=False, ORS_API_KEY=None, AZURE_API_KEY=None):
         raise Exception(f"Llave ORS invlida")
     if AZURE_API_KEY == None and AZURE_API_KEY == None:
         raise Exception(f"Llaves API invalidas")
-    
+
     route_info = {}
     if traffic:
         data_opt = get_opt_route(coords,"08:00:00",AZURE_API_KEY)
@@ -246,9 +248,8 @@ def route(coords, traffic=False, ORS_API_KEY=None, AZURE_API_KEY=None):
         data = get_route(coords, ORS_API_KEY)
         route_line = data["routes"][0]["geometry"]
         route_data = convert.decode_polyline(route_line, True)["coordinates"]
-        
+
         steps = data["routes"][0]["segments"][0]["steps"]
         route_info = get_vel(steps, route_data)
 
     return route_info
-

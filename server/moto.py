@@ -111,26 +111,3 @@ class Moto:
         # 3) advance step
         self.idx_route += 1
         return 1  # continue
-        if self.idx_route >= len(self.route_data[self.idx]["coords"]):
-            self.duration += self.route_data[self.idx]["duration"]
-            self.distance += self.route_data[self.idx]["distance"]
-
-            self.idx += 1
-            self.idx_route = 0
-
-            if self.in_charge:
-                self.charge()
-
-        self.consume_step()
-
-        if self.idx >= len(self.route_data):
-            return 0  # finished
-        
-        # Battery check
-        if self.battery_state < self.umbral_energia and not self.in_charge:
-            self.in_charge = True
-            return 3  # signal: low battery
-
-        
-        self.idx_route += 1
-        return 1  # continue

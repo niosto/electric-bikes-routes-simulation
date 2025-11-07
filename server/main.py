@@ -99,12 +99,14 @@ async def routes(body: RoutesRequest):
                     estaciones_med = json.load(f)
 
                 data = await moto_consume(r, estaciones_med, f"moto-{idx}", client, ORS_TOKEN, body.options.profile)
+
             except httpx.RequestError as e:
                 raise HTTPException(status_code=502, detail=f"Error de red ORS: {e!s}")
             
             idx += 1
 
             out.append({"vehicle_id": v.vehicle_id, **data})
+
     with open("resources/ej_out.json","w")as f:
         json.dump({"routes": out},f,indent=2)
 
