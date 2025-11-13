@@ -14,6 +14,7 @@ load_dotenv()
 
 ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")]
 ORS_TOKEN = os.getenv("ORS_TOKEN", "")
+AZURE_TOKEN = os.getenv("AZURE_TOKEN")
 PORT = int(os.getenv("PORT", "8000"))
 
 app = FastAPI(title="Multi rutas ORS")
@@ -25,6 +26,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+traffic = True
 
 # =================== MODELOS (JSON simple) ===================
 class Waypoint(BaseModel):
@@ -70,6 +73,8 @@ async def routes(body: RoutesRequest):
 
     if not ORS_TOKEN:
         raise HTTPException(status_code=500, detail="ORS_TOKEN no configurado en .env")
+    if not AZURE_TOKEN:
+        raise HTTPException(status_code=500, detail="AZURE_TOKEN no configurado en .env")
     
     out: List[Dict[str, Any]] = []
     async with httpx.AsyncClient(timeout=30) as client:
@@ -77,28 +82,14 @@ async def routes(body: RoutesRequest):
         for v in body.vehicles:
             if len(v.waypoints) < 2:
                 continue
-            coords = _to2d([wp.coordinates for wp in v.waypoints])  # 👈 2D aquí también
+            coords = _to2d([wp.coordinates for wp in v.waypoints])  # 2D aquí también
             if len(coords) < 2:
                 continue
             try:
-                r = await _fetch_ors_route(
-                    client=client,
-                    token=ORS_TOKEN,
-                    profile_key=body.options.profile,
-                    coords=coords,
-                    steps=body.options.steps,
-                    geometries=body.options.geometries,
-                    exclude=body.options.exclude,
-                    want_alternatives=body.options.alternatives,
-                    alt_count=body.options.alt_count,
-                    alt_share=body.options.alt_share,
-                    alt_weight=body.options.alt_weight,
-                )
-
                 with open("resources/estaciones_med.json","r") as f:
                     estaciones_med = json.load(f)
-
-                data = await moto_consume(r, estaciones_med, f"moto-{idx}", client, ORS_TOKEN, body.options.profile)
+                token =  AZURE_TOKEN if traffic else ORS_TOKEN
+                data = await moto_consume(coords, estaciones_med, f"moto-{idx}", client, token, body.options.profile, traffic)
 
             except httpx.RequestError as e:
                 raise HTTPException(status_code=502, detail=f"Error de red ORS: {e!s}")
