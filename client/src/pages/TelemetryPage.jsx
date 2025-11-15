@@ -24,6 +24,7 @@ function to2D(coords) {
     .map((c) => [Number(c[0]), Number(c[1])])
     .filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat));
 }
+
 function fromBikesToFC(src) {
   if (!src.bikes || !Array.isArray(src.bikes)) return null;
   const features = [];
@@ -49,6 +50,7 @@ function fromBikesToFC(src) {
   });
   return { type: "FeatureCollection", features };
 }
+
 function parseFechaToEpochSeconds(fecha) {
   try {
     if (typeof fecha !== "string") return null;
@@ -68,6 +70,7 @@ function parseFechaToEpochSeconds(fecha) {
     return null;
   }
 }
+
 function haversineKm([lng1, lat1], [lng2, lat2]) {
   const R = 6371;
   const toRad = (x) => (x * Math.PI) / 180;
@@ -78,6 +81,7 @@ function haversineKm([lng1, lat1], [lng2, lat2]) {
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
+
 const cumulative = (arr) => {
   let s = 0;
   return arr.map((v) => (s += v));
@@ -89,13 +93,13 @@ export default function TelemetryPage() {
   const [geojson, setGeojson] = useState(null);
   const [telemetryRows, setTelemetryRows] = useState([]);
   const [downsample, setDownsample] = useState(1);
-  const [tab, setTab] = useState("energy"); // power | speed | alt | energy
   const inputRef = useRef(null);
 
   function handleFile(e) {
     const f = e.target.files?.[0];
     if (!f) return;
     setFileName(f.name);
+
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -103,12 +107,98 @@ export default function TelemetryPage() {
         let fc = null;
         let rows = null;
 
+        /* ------------------------------------------
+         * 1) GeoJSON válido: FeatureCollection
+         * ------------------------------------------ */
         if (json?.type === "FeatureCollection") {
           fc = json;
+
+        /* ------------------------------------------
+         * 2) Formato ORS “bikes”
+         * ------------------------------------------ */
         } else if (json?.bikes) {
           fc = fromBikesToFC(json);
-        } else if (Array.isArray(json) && json.length > 1 && "latitude" in json[0]) {
-          const coords = json.map((p) => [Number(p.longitude), Number(p.latitude)]);
+
+        /* ------------------------------------------
+         * 3) Formato exportado por Mapa (Rutas):
+         *    vehicles_request.json
+         *
+         *    {
+         *      "options": { ... },
+         *      "vehicles": [
+         *        {
+         *          "vehicle_id": "moto-1",
+         *          "waypoints": [ { "coordinates": [lon, lat] }, ... ]
+         *        }
+         *      ]
+         *    }
+         * ------------------------------------------ */
+        } else if (Array.isArray(json?.vehicles)) {
+          const features = [];
+
+          json.vehicles.forEach((v, idx) => {
+            const waypoints = Array.isArray(v.waypoints) ? v.waypoints : [];
+
+            const coords = waypoints
+              .map((w) => {
+                // Caso principal: coordinates = [lon, lat]
+                if (
+                  Array.isArray(w.coordinates) &&
+                  w.coordinates.length >= 2
+                ) {
+                  const lon = Number(w.coordinates[0]);
+                  const lat = Number(w.coordinates[1]);
+                  return [lon, lat];
+                }
+
+                // Fallback por si algún día cambias los nombres
+                const lat =
+                  w.latitude ?? w.lat ?? w.latitud ?? w.y ?? null;
+                const lon =
+                  w.longitude ?? w.lng ?? w.lon ?? w.x ?? null;
+
+                return [Number(lon), Number(lat)];
+              })
+              .filter(
+                ([lon, lat]) =>
+                  Number.isFinite(lon) && Number.isFinite(lat)
+              );
+
+            if (coords.length >= 2) {
+              features.push({
+                type: "Feature",
+                properties: {
+                  vehicle_id:
+                    v.vehicle_id || v.id || v.name || `vehiculo-${idx + 1}`,
+                  source: "map-routes-export",
+                },
+                geometry: {
+                  type: "LineString",
+                  coordinates: coords,
+                },
+              });
+            }
+          });
+
+          if (features.length) {
+            fc = { type: "FeatureCollection", features };
+            rows = []; // no hay telemetría punto a punto → no hay curvas
+          }
+
+        /* ------------------------------------------
+         * 4) Telemetría real:
+         *    [ { latitude, longitude, altitude, speed, pw, fecha } ]
+         * ------------------------------------------ */
+        } else if (
+          Array.isArray(json) &&
+          json.length > 1 &&
+          ("latitude" in json[0] || "lat" in json[0])
+        ) {
+          const coords = json.map((p) => [
+            Number(p.longitude ?? p.lng),
+            Number(p.latitude ?? p.lat),
+          ]);
+
           fc = {
             type: "FeatureCollection",
             features: [
@@ -119,21 +209,32 @@ export default function TelemetryPage() {
               },
             ],
           };
+
           rows = json.map((p, i) => ({
             i,
-            lat: Number(p.latitude),
-            lng: Number(p.longitude),
-            alt: Number(p.altitude),
-            speed_kmh: Number.isFinite(Number(p.speed)) ? Number(p.speed) : null,
-            power_kW: Number.isFinite(Number(p.pw)) ? Number(p.pw) : null,
+            lat: Number(p.latitude ?? p.lat),
+            lng: Number(p.longitude ?? p.lng),
+            alt: Number(p.altitude ?? p.alt),
+            speed_kmh: Number.isFinite(Number(p.speed))
+              ? Number(p.speed)
+              : null,
+            power_kW: Number.isFinite(Number(p.pw))
+              ? Number(p.pw)
+              : null,
             t_epoch: parseFechaToEpochSeconds(p.fecha),
           }));
         }
 
+        /* ------------------------------------------
+         * Si ningún formato fue reconocido
+         * ------------------------------------------ */
         if (!fc) {
-          alert("Formato no reconocido: usa FeatureCollection, bikes o lista de puntos.");
+          alert(
+            "Formato no reconocido.\nUsa: GeoJSON, bikes, vehicles o lista de puntos."
+          );
           return;
         }
+
         setGeojson(fc);
         setTelemetryRows(rows || []);
       } catch (err) {
@@ -141,6 +242,7 @@ export default function TelemetryPage() {
         alert("Error procesando JSON: " + err.message);
       }
     };
+
     reader.readAsText(f);
   }
 
@@ -162,7 +264,9 @@ export default function TelemetryPage() {
   } = useMemo(() => {
     const coords = geojson?.features?.[0]?.geometry?.coordinates || [];
     const segKm = [];
-    for (let i = 0; i < coords.length - 1; i++) segKm.push(haversineKm(coords[i], coords[i + 1]));
+    for (let i = 0; i < coords.length - 1; i++) {
+      segKm.push(haversineKm(coords[i], coords[i + 1]));
+    }
     const cumDistKm = cumulative(segKm);
     const totalKm = segKm.reduce((a, b) => a + b, 0);
 
@@ -174,7 +278,11 @@ export default function TelemetryPage() {
         chart_time_power: [],
         chart_speed: [],
         chart_alt: [],
-        chart_energy_vs_dist: cumDistKm.map((v, i) => ({ i, cum_km: v, cum_kWh: 0 })),
+        chart_energy_vs_dist: cumDistKm.map((v, i) => ({
+          i,
+          cum_km: v,
+          cum_kWh: 0,
+        })),
       };
     }
 
@@ -193,6 +301,8 @@ export default function TelemetryPage() {
     const chart_alt = [];
     const chart_energy_vs_dist = [];
 
+    const cumSegKm = cumulative(segKm);
+
     for (let i = 0; i < dsRows.length; i++) {
       const r = dsRows[i];
       const t = haveEpoch ? r.t_epoch - t0 : i;
@@ -207,14 +317,23 @@ export default function TelemetryPage() {
         cum_kWh += P * (dt / 3600);
       }
 
-      chart_time_power.push({ t_s: t, power_kW: Number.isFinite(r.power_kW) ? r.power_kW : 0 });
-      chart_speed.push({ t_s: t, speed_kmh: Number.isFinite(r.speed_kmh) ? r.speed_kmh : 0 });
-      chart_alt.push({ t_s: t, alt_m: Number.isFinite(r.alt) ? r.alt : null });
+      chart_time_power.push({
+        t_s: t,
+        power_kW: Number.isFinite(r.power_kW) ? r.power_kW : 0,
+      });
+      chart_speed.push({
+        t_s: t,
+        speed_kmh: Number.isFinite(r.speed_kmh) ? r.speed_kmh : 0,
+      });
+      chart_alt.push({
+        t_s: t,
+        alt_m: Number.isFinite(r.alt) ? r.alt : null,
+      });
 
-      const idxDist = Math.min(i, Math.max(0, cumulative(segKm).length - 1));
+      const idxDist = Math.min(i, Math.max(0, cumSegKm.length - 1));
       chart_energy_vs_dist.push({
         i: i + 1,
-        cum_km: cumulative(segKm)[idxDist] || 0,
+        cum_km: cumSegKm[idxDist] || 0,
         cum_kWh: cum_kWh,
       });
     }
@@ -230,151 +349,298 @@ export default function TelemetryPage() {
     };
   }, [geojson, telemetryRows, downsample]);
 
-  /* ---------- Layout 50/50 ---------- */
-  const pageHeight = "calc(100vh - 96px)";
+  /* ---------- LAYOUT ESTILO MAPA (Rutas) ---------- */
 
   return (
-    <section
-      className="w-full"
-      style={{ display: "flex", gap: 12, height: pageHeight, padding: 16, boxSizing: "border-box" }}
-    >
-      {/* --------- IZQUIERDA (50%) --------- */}
-      <aside
-        className="rounded-2xl border bg-white shadow-sm"
-        style={{ width: "50%", minWidth: "50%", maxWidth: "50%", display: "flex", flexDirection: "column" }}
-      >
-        <div className="h-12 px-4 flex items-center justify-between border-b bg-white/80 backdrop-blur">
-          <div className="flex items-center gap-2">
-            <Route className="w-5 h-5" />
-            <h2 className="font-semibold">Telemetría</h2>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-              <Upload className="w-4 h-4 mr-1" /> Cargar
-            </Button>
-            <Button variant="ghost" size="sm" onClick={clearAll} disabled={!geojson}>
-              <Undo2 className="w-4 h-4 mr-1" /> Limpiar
-            </Button>
-          </div>
-          <input ref={inputRef} type="file" accept=".json,.geojson" className="hidden" onChange={handleFile} />
-        </div>
-
-        <div className="flex-1 overflow-auto p-4">
-          {fileName && (
-            <div className="text-sm text-gray-500 mb-2">
-              <FileJson className="inline w-4 h-4 mr-1" /> {fileName}
-            </div>
-          )}
-
-          {/* Métricas (cards como en Rutas) */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <Card className="rounded-xl shadow-none border">
-              <CardContent className="p-3">
-                <div className="text-[11px] text-gray-500 uppercase">Distancia</div>
-                <div className="text-xl font-semibold">{(totalKm ?? 0).toFixed(2)} km</div>
-              </CardContent>
-            </Card>
-            <Card className="rounded-xl shadow-none border">
-              <CardContent className="p-3">
-                <div className="text-[11px] text-gray-500 uppercase">Tiempo</div>
-                <div className="text-xl font-semibold">{(totalTimeMin ?? 0).toFixed(1)} min</div>
-              </CardContent>
-            </Card>
-            <Card className="rounded-xl shadow-none border">
-              <CardContent className="p-3">
-                <div className="text-[11px] text-gray-500 uppercase">Energía</div>
-                <div className="text-xl font-semibold">{(totalEnergy_kWh ?? 0).toFixed(3)} kWh</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Downsample + grupo de botones estilo Rutas */}
-          <div className="mb-3">
-            <label className="text-sm font-medium">Downsample</label>
-            <Slider value={[downsample]} onValueChange={([v]) => setDownsample(Math.max(1, Math.round(v)))} min={1} max={10} step={1} />
-            <div className="text-xs text-gray-500">{downsample}x</div>
-          </div>
-
-          {/* Grupo de botones (segmentado) para tabs — MISMO estilo que en Rutas */}
-          <div className="inline-flex items-center rounded-md border bg-white shadow-sm overflow-hidden mb-3">
-            <Button size="sm" variant={tab === "power" ? "default" : "outline"} onClick={() => setTab("power")} className="rounded-none">
-              Potencia
-            </Button>
-            <Button size="sm" variant={tab === "speed" ? "default" : "outline"} onClick={() => setTab("speed")} className="rounded-none -ml-px">
-              Velocidad
-            </Button>
-            <Button size="sm" variant={tab === "alt" ? "default" : "outline"} onClick={() => setTab("alt")} className="rounded-none -ml-px">
-              Altitud
-            </Button>
-            <Button size="sm" variant={tab === "energy" ? "default" : "outline"} onClick={() => setTab("energy")} className="rounded-none -ml-px">
-              Energía
-            </Button>
-          </div>
-
-          {/* Gráfica activa */}
-          <Card className="rounded-2xl shadow-sm">
-            <CardContent className="p-3">
-              <div style={{ height: 380 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  {tab === "power" && (
-                    <AreaChart data={chart_time_power}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="t_s" />
-                      <YAxis label={{ value: "kW", angle: -90, position: "insideLeft" }} />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="power_kW" fill="#c7d2fe" stroke="#4f46e5" />
-                    </AreaChart>
-                  )}
-                  {tab === "speed" && (
-                    <LineChart data={chart_speed}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="t_s" />
-                      <YAxis label={{ value: "km/h", angle: -90, position: "insideLeft" }} />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="speed_kmh" stroke="#10b981" dot={false} />
-                    </LineChart>
-                  )}
-                  {tab === "alt" && (
-                    <LineChart data={chart_alt}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="t_s" />
-                      <YAxis label={{ value: "m", angle: -90, position: "insideLeft" }} />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="alt_m" stroke="#f59e0b" dot={false} />
-                    </LineChart>
-                  )}
-                  {tab === "energy" && (
-                    <AreaChart data={chart_energy_vs_dist}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="cum_km" />
-                      <YAxis label={{ value: "kWh", angle: -90, position: "insideLeft" }} />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="cum_kWh" fill="#e9d5ff" stroke="#7e22ce" />
-                    </AreaChart>
-                  )}
-                </ResponsiveContainer>
+    <section className="page">
+      {/* Bloque superior: panel + mapa */}
+      <div className="page-main">
+        {/* Sidebar de telemetría */}
+        <aside className="sidebar">
+          <div className="card">
+            {/* Header del panel */}
+            <div
+              className="flex items-center justify-between"
+              style={{ marginBottom: 12 }}
+            >
+              <div className="flex items-center gap-2">
+                <Route className="w-5 h-5" />
+                <h2 className="panel-title" style={{ margin: 0 }}>
+                  Telemetría
+                </h2>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </aside>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => inputRef.current?.click()}
+                  className="btn ghost"
+                >
+                  <Upload className="w-4 h-4 mr-1" /> Cargar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAll}
+                  disabled={!geojson}
+                  className="btn ghost"
+                >
+                  <Undo2 className="w-4 h-4 mr-1" /> Limpiar
+                </Button>
+              </div>
+              <input
+                ref={inputRef}
+                type="file"
+                accept=".json,.geojson"
+                className="hidden"
+                onChange={handleFile}
+              />
+            </div>
 
-      {/* --------- DERECHA (50%) --------- */}
-      <div
-        className="rounded-2xl overflow-hidden border bg-white shadow-sm"
-        style={{ width: "50%", minWidth: "50%", maxWidth: "50%", display: "flex", flexDirection: "column" }}
-      >
-        <div className="h-12 px-4 flex items-center justify-between border-b bg-white/80 backdrop-blur">
-          <div className="flex items-center gap-2">
-            <Route className="w-5 h-5" />
-            <h3 className="font-semibold">Mapa</h3>
+            {fileName && (
+              <div
+                className="text-sm"
+                style={{ color: "rgb(107,114,128)", marginBottom: 8 }}
+              >
+                <FileJson className="inline w-4 h-4 mr-1" /> {fileName}
+              </div>
+            )}
+
+            {/* Métricas principales */}
+            <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+              <Card className="rounded-xl shadow-none border">
+                <CardContent className="p-2">
+                  <div className="text-[11px]" style={{ color: "rgb(107,114,128)" }}>
+                    Distancia
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {(totalKm ?? 0).toFixed(2)} km
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl shadow-none border">
+                <CardContent className="p-2">
+                  <div className="text-[11px]" style={{ color: "rgb(107,114,128)" }}>
+                    Tiempo
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {(totalTimeMin ?? 0).toFixed(1)} min
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl shadow-none border">
+                <CardContent className="p-2">
+                  <div className="text-[11px]" style={{ color: "rgb(107,114,128)" }}>
+                    Energía
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {(totalEnergy_kWh ?? 0).toFixed(3)} kWh
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Downsample */}
+            <div style={{ marginBottom: 4 }}>
+              <label className="text-sm font-medium">Downsample</label>
+              <Slider
+                value={[downsample]}
+                onValueChange={([v]) =>
+                  setDownsample(Math.max(1, Math.round(v)))
+                }
+                min={1}
+                max={10}
+                step={1}
+              />
+              <div
+                className="text-xs"
+                style={{ color: "rgb(107,114,128)", marginTop: 2 }}
+              >
+                {downsample}x
+              </div>
+            </div>
+
+            <div
+              className="hint"
+              style={{ fontSize: 12, marginTop: 8 }}
+            >
+              Carga un archivo de telemetría en JSON para visualizar la ruta y
+              las curvas de potencia, velocidad, altitud y energía.
+            </div>
           </div>
-          <div className="text-xs text-neutral-500">{geojson ? "Ruta cargada" : "Carga un JSON para pintar la ruta"}</div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <MapView vehicles={[]} routes={{}} importedGeoJSON={geojson} drawOnly={true} />
+        </aside>
+
+        {/* Mapa a la derecha */}
+        <div className="map-wrapper">
+          <MapView
+            vehicles={[]}
+            routes={{}}
+            importedGeoJSON={geojson}
+            drawOnly={true}
+          />
         </div>
       </div>
+
+      {/* Bloque inferior: gráficas de telemetría */}
+      <section className="stats-section">
+        <div className="stats-header">
+          <h2>Estadísticas de la telemetría</h2>
+        </div>
+
+        <div className="stats-grid">
+          {/* Potencia vs tiempo */}
+          <div className="stats-card">
+            <h3>Potencia vs tiempo</h3>
+            {chart_time_power.length ? (
+              <div style={{ height: 220 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chart_time_power}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="t_s"
+                      label={{
+                        value: "Tiempo (s)",
+                        position: "insideBottomRight",
+                        offset: -4,
+                      }}
+                    />
+                    <YAxis
+                      label={{
+                        value: "kW",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <Tooltip />
+                    <Area
+                      type="monotone"
+                      dataKey="power_kW"
+                      fill="#c7d2fe"
+                      stroke="#4f46e5"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p>No hay datos de potencia aún.</p>
+            )}
+          </div>
+
+          {/* Velocidad vs tiempo */}
+          <div className="stats-card">
+            <h3>Velocidad vs tiempo</h3>
+            {chart_speed.length ? (
+              <div style={{ height: 220 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chart_speed}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="t_s"
+                      label={{
+                        value: "Tiempo (s)",
+                        position: "insideBottomRight",
+                        offset: -4,
+                      }}
+                    />
+                    <YAxis
+                      label={{
+                        value: "km/h",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="speed_kmh"
+                      stroke="#10b981"
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p>No hay datos de velocidad aún.</p>
+            )}
+          </div>
+
+          {/* Altitud vs tiempo */}
+          <div className="stats-card">
+            <h3>Altitud vs tiempo</h3>
+            {chart_alt.length ? (
+              <div style={{ height: 220 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chart_alt}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="t_s"
+                      label={{
+                        value: "Tiempo (s)",
+                        position: "insideBottomRight",
+                        offset: -4,
+                      }}
+                    />
+                    <YAxis
+                      label={{
+                        value: "m",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="alt_m"
+                      stroke="#f59e0b"
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p>No hay datos de altitud aún.</p>
+            )}
+          </div>
+
+          {/* Energía acumulada vs distancia */}
+          <div className="stats-card">
+            <h3>Energía acumulada vs distancia</h3>
+            {chart_energy_vs_dist.length ? (
+              <div style={{ height: 220 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chart_energy_vs_dist}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="cum_km"
+                      label={{
+                        value: "Distancia (km)",
+                        position: "insideBottomRight",
+                        offset: -4,
+                      }}
+                    />
+                    <YAxis
+                      label={{
+                        value: "kWh",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <Tooltip />
+                    <Area
+                      type="monotone"
+                      dataKey="cum_kWh"
+                      fill="#e9d5ff"
+                      stroke="#7e22ce"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p>No hay datos de energía aún.</p>
+            )}
+          </div>
+        </div>
+      </section>
     </section>
   );
 }

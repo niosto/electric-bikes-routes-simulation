@@ -18,19 +18,34 @@ export function buildVehiclesJSON(vehicles, options) {
 }
 
 // Exporta GeoJSON de las rutas calculadas por ORS
-export function buildRoutesFeatureCollection(routes, selectedAlt = {}) {
-  const features = Object.entries(routes).map(([vehicle_id, info]) => {
-    const sel = selectedAlt[vehicle_id] ?? 0;
-    const chosen = sel === 0 ? info.geometry : (info.alternatives?.[sel - 1]?.geometry);
-    const coords = (chosen?.coordinates || []).map(c => [c[0], c[1]]);
+import { buildClientTelemetry } from "./telemetry";
+
+export function buildRoutesFeatureCollection(routes) {
+  const features = Object.entries(routes).map(([id, r]) => {
+    const coords = r.geometry?.coordinates || [];
+
+    const telemetry = buildClientTelemetry(r);
+
     return {
       type: "Feature",
-      properties: { vehicle_id, selected_alt: sel },
-      geometry: { type: "LineString", coordinates: coords },
+      properties: {
+        vehicle_id: id,
+        summary: r.summary || null,
+        telemetry: telemetry
+      },
+      geometry: {
+        type: "LineString",
+        coordinates: coords
+      }
     };
   });
-  return { type: "FeatureCollection", features };
+
+  return {
+    type: "FeatureCollection",
+    features
+  };
 }
+
 
 // (Opcional) Exporta GeoJSON de los waypoints (como LineString)
 export function buildWaypointsFeatureCollection(vehicles) {

@@ -24,10 +24,63 @@ body { background: #fff; color: #111; }
 .topnav .tab.active { background: #eef2ff; color: #111827; }
 
 /* ===== página del mapa: 2 columnas ===== */
+/* La página ahora es una columna: arriba mapa+sidebar, abajo estadísticas */
 .page {
-  height: calc(100vh - 56px);       /* ocupa todo menos la barra */
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 56px); /* sigue ocupando al menos el alto visible */
+}
+
+/* Bloque superior: sidebar + mapa en dos columnas */
+.page-main {
   display: grid;
-  grid-template-columns: 320px 1fr; /* panel izq + mapa der */
+  grid-template-columns: 320px minmax(0, 1fr);
+}
+
+/* Sección de estadísticas y gráficas (debajo del mapa) */
+.stats-section {
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.stats-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Micro-interacciones en tarjetas */
+.stats-card,
+.card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.stats-card:hover,
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+/* Opcional: grid de tarjetas de stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.stats-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
 }
 
 /* panel lateral */
@@ -43,12 +96,21 @@ body { background: #fff; color: #111; }
 button { cursor: pointer; }
 
 /* ===== contenedor del mapa ===== */
-.map-wrapper { position: relative; height: calc(100vh - 56px); }
-.map-root    { height: 100%; width: 100%; }  /* hoja de Leaflet */
+/* ===== contenedor del mapa ===== */
+.map-wrapper {
+  position: relative;
+  height: 60vh;       /* puedes subir/bajar este porcentaje */
+  min-height: 400px;  /* para que nunca quede diminuto */
+}
+.map-root {
+  height: 100%;
+  width: 100%;
+}  /* hoja de Leaflet */
+
 
 /* panel de coordenadas centrado arriba */
 .coords-panel {
-  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  position: absolute; top: 12px; right: 12px; left: auto; transform: none;
   z-index: 1000; background: rgba(255,255,255,0.97);
   border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; width: 320px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
@@ -101,3 +163,28 @@ button { cursor: pointer; }
 
 .total{margin-top:10px;font-size:13px;color:#374151}
 .total strong{margin-left:6px}
+
+/* Barra de tabs superior */
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+/* Estilo base de cada tab */
+.tabs a,
+.tabs a:visited {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  text-decoration: none;
+  font-size: 14px;
+  color: #111;          /* texto negro, sin morados */
+  background: transparent;
+}
+
+/* Tab activa */
+.tabs a.active,
+.tabs a.active:visited {
+  background: #111;      /* fondo negro */
+  color: #fff;           /* texto blanco */
+}
