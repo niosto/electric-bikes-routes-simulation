@@ -219,18 +219,17 @@ export default function StatsPanel({
               </li>
               {Number.isFinite(emisiones_co2_kg) && (
                 <li>
-                  <strong>Emisiones de CO₂:</strong> {emisiones_co2_kg.toFixed(1)} kg
+                  <strong>Emisiones de CO₂:</strong> {emisiones_co2_kg.toFixed(1)} gr
                 </li>
               )}
               {Number.isFinite(emisiones_co2_equivalente_kg) && (
                 <li>
-                  <strong>Emisiones(desde galones):</strong> {emisiones_co2_equivalente_kg.toFixed(1)} kg
+                  <strong>Emisiones(desde galones):</strong> {emisiones_co2_equivalente_kg.toFixed(1)} gr
                 </li>
               )}
               {Number.isFinite(emisiones_co2_equivalente_electrico_kg) && (
                 <li>
-                  <strong>Emisiones equivalentes (motocicleta eléctrica):</strong> {emisiones_co2_equivalente_electrico_kg} kg
-                </li>
+                  <strong>Emisiones equivalentes (motocicleta eléctrica):</strong> {emisiones_co2_equivalente_electrico_kg} gr                </li>
               )}
             </ul>
           ) : (

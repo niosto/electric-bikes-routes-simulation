@@ -47,6 +47,7 @@ async def moto_consume(rutas, estaciones, nombre, client, token, profile):
 
     while step_result != 0:
         if step_result == 3:
+            print("Cargar")
             # Battery low: reroute to nearest charging station
             current_pos = moto.route_data[moto.idx]["coords"][moto.idx_ruta][:2]
 

@@ -111,7 +111,7 @@ class Moto:
         tiempo_horas = delta_t / 3600
         self.pow_consumption = (p_eb / 1000) * tiempo_horas
         self.pcn_consumption = (p_cn / 1000) * tiempo_horas
-        
+
         consumo_kwh = (p_eb / 1000) * tiempo_horas
         
         prev_consumo = self.capacidad_bateria - prev_soc

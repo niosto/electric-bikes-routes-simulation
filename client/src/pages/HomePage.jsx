@@ -372,7 +372,7 @@ export default function HomePage() {
             </div>
             
             <h1>
-              Plataforma de simulación para <span className="hero-highlight">bicicletas eléctricas</span>
+              Plataforma de simulación para <span className="hero-highlight">motocicletas eléctricas</span>
             </h1>
             
             <p>
@@ -412,8 +412,8 @@ export default function HomePage() {
               <h3>Resumen rápido</h3>
               <p className="hero-card-subtitle">Capacidades principales</p>
               <ul className="features-list">
-                <li>Simulación de rutas con OpenRouteService (ORS)</li>
-                <li>Modelo de consumo energético para bicicletas híbridas</li>
+                <li>Simulación de rutas con OpenRouteService (ORS) y Azure Maps</li>
+                <li>Modelo de consumo energético para motocicletas eléctricas</li>
                 <li>Visualización de potencia, velocidad, altitud y SoC</li>
                 <li>Exportación de datos en JSON y GeoJSON</li>
               </ul>
@@ -425,7 +425,7 @@ export default function HomePage() {
         <section className="features-section">
           <div className="section-header">
             <h2>Características principales</h2>
-            <p>Todo lo que necesitas para simular y analizar rutas de bicicletas eléctricas</p>
+            <p>Todo lo que necesitas para simular y analizar rutas de motocicletas eléctricas</p>
           </div>
 
           <div className="features-grid">
