@@ -50,7 +50,8 @@ class Engine:
     vd = 125                    # Engine displacement volume [cm ^ 3]
     wice_min = 1000/9.5493      # Engine minimum speed[rad / seg]
     wice_max = 20000/9.5493     # Engine maximum speed[rad / seg]
-    
+
+
 # Class Carburator
 class Carburator:
     tind_ralenti = Engine().neutraload + Engine().f_sft * Engine().wice_min
@@ -62,16 +63,16 @@ class Carburator:
 
 # Class Chassis
 class Chassis:
-    m = 250    # Vehicle mass [kg]
-    a = 1.34    # Frontal area [m²]
-    cd = 0.7    # Drag coefficient [-] | 
+    m = 150     # Vehicle mass [kg]
+    a = 0.6     # Frontal area [m²]
+    cd = 0.7    # Drag coefficient [-]
 
     crr = 0.01  # Rolling coefficient[-]
 
 
 # Class Wheel
 class Wheel:
-    rw = 0.20     # Wheel radius [m]
+    rw = 0.2667     # Wheel radius [m]
     jw = 0          # Wheel moment of inertia[kg - m²]
 
 

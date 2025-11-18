@@ -75,8 +75,6 @@ def get_opt_route(coords,time,api_key):
         "departAt": date
     }
 
-    print(body)
-
     url = "https://atlas.microsoft.com/route/directions"
     params = {"api-version": "2025-01-01"}
 
@@ -169,9 +167,10 @@ def get_vel(steps, elevation_data):
     route = {
         "coords": [],        # [lng, lat, alt] format
         "speeds": [],      # Speed in m/s
-        "slopes": []    # Slope in degrees
+        "slopes": [],
+        "times": []    # Slope in degrees
     }
-    
+
     total_time = 0
     total_distance = 0
 
@@ -211,6 +210,7 @@ def get_vel(steps, elevation_data):
             route["coords"].append([lng, lat, alt])
             route["speeds"].append(round(speed_ms, 2))
             route["slopes"].append(round(slope_deg, 2))
+            route["times"].append(round(total_time, 2))
 
             total_time += duration_per_point
             total_distance += distance_per_point
@@ -224,6 +224,7 @@ def get_vel(steps, elevation_data):
                 route["coords"].append([lng, lat, alt])
                 route["speeds"].append(round(speed_ms, 2))
                 route["slopes"].append(round(slope_deg, 2))
+                route["times"].append(round(total_time, 2))
 
     return route
 

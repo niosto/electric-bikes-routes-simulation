@@ -64,7 +64,7 @@ class Carburator:
 # Class Chassis
 class Chassis:
     m = 200     # Vehicle mass [kg]
-    a = 0.74    # Frontal area [m²]
+    a = 0.6     # Frontal area [m²]
     cd = 0.7    # Drag coefficient [-]
 
     crr = 0.01  # Rolling coefficient[-]

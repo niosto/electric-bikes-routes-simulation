@@ -84,3 +84,12 @@ async def _fetch_ors_route(
         json.dump(principal,f,indent=2)
     
     return principal
+
+async def _fetch_azure_route(
+    client: httpx.AsyncClient,
+    token: str,
+    coords: List[Tuple[float, float]]
+) -> Dict[str, Any]:
+    
+    
+    return

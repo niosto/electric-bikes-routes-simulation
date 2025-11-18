@@ -298,7 +298,7 @@ export default function LoginPage() {
           </div>
 
           <div className="demo-info">
-            ℹ️ Modo demo: Cualquier usuario con contraseña "password" funciona
+            Modo demo: Cualquier usuario con contraseña "password" funciona
           </div>
         </div>
       </div>

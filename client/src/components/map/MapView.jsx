@@ -36,10 +36,10 @@ const chargingIcon = new L.DivIcon({
   html: `
     <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
       <!-- Circle background -->
-      <circle cx="18" cy="18" r="16" fill="#FFD700" stroke="#333" stroke-width="2" />
+      <circle cx="18" cy="18" r="16" fill="#000000ff" stroke="#000000ff" stroke-width="1.5" />
       
       <!-- Lightning bolt -->
-      <path d="M17 6 L9 20 H17 L13 30 L25 14 H17 Z" fill="white" stroke="#333" stroke-width="1.5" />
+      <path d="M17 6 L9 20 H17 L13 30 L25 14 H17 Z" fill="white" stroke="#ffffffff" stroke-width="1.0" />
     </svg>`,
   iconSize: [32, 32],
   iconAnchor: [16,16],
