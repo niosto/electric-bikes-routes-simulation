@@ -46,13 +46,14 @@ class Moto:
         })
 
     def change_route(self, new_route):
-        self.route_data[self.idx]["coords"] = self.route_data[self.idx]["coords"][:self.idx_ruta + 1]
-        self.route_data[self.idx]["speeds"] = self.route_data[self.idx]["speeds"][:self.idx_ruta + 1]
-        self.route_data[self.idx]["slopes"] = self.route_data[self.idx]["slopes"][:self.idx_ruta + 1]
+        self.route_data[self.idx]["coords"] = self.route_data[self.idx]["coords"][:self.idx_ruta]
+        self.route_data[self.idx]["speeds"] = self.route_data[self.idx]["speeds"][:self.idx_ruta]
+        self.route_data[self.idx]["slopes"] = self.route_data[self.idx]["slopes"][:self.idx_ruta]
 
         self.route_data = self.route_data[:self.idx + 1] + new_route + self.route_data[self.idx + 1:] 
 
-        self.idx_ruta += 1
+        self.idx_ruta = 0
+        self.idx += 1
 
     def charge(self):
         energy_charged = self.capacidad_bateria - self.estado_bateria
