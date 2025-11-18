@@ -56,25 +56,27 @@ export default function StatsPanel({
     return { distanceKm: dKm, durationMin: dMin };
   }, [activeRoute, totalSummary]);
 
+  
   // === 3. Datos para gráficas (potencia & SoC) ===
   const powerSocData = useMemo(() => {
     const pot = activeRoute?.properties?.potencia;
     const soc = activeRoute?.properties?.soc;
     if (!Array.isArray(pot) || !Array.isArray(soc)) return [];
-
+    
     return pot.map((p, idx) => ({
       idx,
       power: p,
       soc: soc[idx] ?? null,
     }));
   }, [activeRoute]);
-
+  
   const avgPower = useMemo(() => {
     if (!powerSocData.length) return null;
     const sum = powerSocData.reduce((acc, d) => acc + d.power, 0);
     return sum / powerSocData.length;
   }, [powerSocData]);
-
+  
+  
   // === 4. "Energía acumulada" como índice (suma de potencia) ===
   const cumulativeEnergyData = useMemo(() => {
     if (!powerSocData.length) return [];
@@ -84,6 +86,27 @@ export default function StatsPanel({
       return { idx: d.idx, energyIndex: cum };
     });
   }, [powerSocData]);
+  
+  const emisiones_co2_kg = useMemo(() => {
+    let factor_emision_gco2_km = 70;
+    if (!Number.isFinite(distanceKm)) return null;
+    return (distanceKm * factor_emision_gco2_km) / 1000; // kg CO2
+  }, [distanceKm]);
+
+  const emisiones_co2_equivalente_electrico_kg = useMemo(() => {
+    let factor_emision_electrico_gco2_km = 35;
+    if (!Number.isFinite(distanceKm)) return null;
+    return (distanceKm * factor_emision_electrico_gco2_km) / 1000; // kg CO2
+  }, [distanceKm]);
+
+  const emisiones_co2_equivalente_kg = useMemo(() => {
+    const factor_emision_co2_kg_galon = 8.887;
+    if (!Number.isFinite(distanceKm)) return null;
+    let c = cumulativeEnergyData[cumulativeEnergyData.length - 1];
+    let poder_calorifico_gasolina_kwh_galon = 33.7;
+    const consumo_galones = c.energyIndex / poder_calorifico_gasolina_kwh_galon;
+    return consumo_galones * factor_emision_co2_kg_galon; // kg CO2
+  }, [distanceKm]);
 
   // === 5. Comparación entre vehículos (multi-moto) ===
   const comparisonData = useMemo(() => {
@@ -135,7 +158,6 @@ export default function StatsPanel({
   };
 
   // === 7. Exportar "PDF" usando la impresión del navegador ===
-  // (si luego quieres algo más pro con jsPDF, lo hacemos encima)
   const handleExportPdf = () => {
     window.print();
   };
@@ -195,6 +217,20 @@ export default function StatsPanel({
                   activeRoute.geometry?.coordinates?.length ||
                   "N/D"}
               </li>
+              {Number.isFinite(emisiones_co2_kg) && (
+                <li>
+                  <strong>Emisiones de CO₂:</strong> {emisiones_co2_kg.toFixed(1)} gr
+                </li>
+              )}
+              {Number.isFinite(emisiones_co2_equivalente_kg) && (
+                <li>
+                  <strong>Emisiones(desde galones):</strong> {emisiones_co2_equivalente_kg.toFixed(1)} gr
+                </li>
+              )}
+              {Number.isFinite(emisiones_co2_equivalente_electrico_kg) && (
+                <li>
+                  <strong>Emisiones equivalentes (motocicleta eléctrica):</strong> {emisiones_co2_equivalente_electrico_kg} gr                </li>
+              )}
             </ul>
           ) : (
             <p>Aún no hay rutas calculadas.</p>

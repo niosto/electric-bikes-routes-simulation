@@ -26,6 +26,7 @@ async def moto_consume(rutas, estaciones, nombre, client, token, profile):
             idx_est = moto.nearest_station(current_pos)
 
             station_coord = estaciones["coords"][idx_est]
+            
             destiny = moto.route_data[moto.idx]["coords"][-1][:2]
 
             moto.add_charge_point(idx_est, current_pos)
