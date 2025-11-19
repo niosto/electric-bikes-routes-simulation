@@ -6,6 +6,11 @@ pruebas2.ipynb
 resources/ej_body.json
 resources/ej_gj.json
 resources/ej_out.json
+<<<<<<< HEAD
 !resources/examples/*.json
 Puntos_de_rutas/
 .vscode/
+=======
+resources
+Puntos_de_rutas/
+>>>>>>> tmp
