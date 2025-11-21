@@ -412,13 +412,8 @@ export default function HomePage() {
               <h3>Resumen rápido</h3>
               <p className="hero-card-subtitle">Capacidades principales</p>
               <ul className="features-list">
-<<<<<<< HEAD
                 <li>Simulación de rutas con OpenRouteService (ORS) y Azure Maps</li>
                 <li>Modelo de consumo energético para motocicletas eléctricas</li>
-=======
-                <li>Simulación de rutas con OpenRouteService (ORS)</li>
-                <li>Modelo de consumo energético para motocicletas híbridas</li>
->>>>>>> tmp
                 <li>Visualización de potencia, velocidad, altitud y SoC</li>
                 <li>Exportación de datos en JSON y GeoJSON</li>
               </ul>

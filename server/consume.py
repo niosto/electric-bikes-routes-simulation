@@ -3,8 +3,10 @@ from petitions import get_vel
 from ors_routes import _fetch_ors_route, _to2d
 import numpy as np
 
-def preprocesar_vectores(velocidades, pendientes, tiempos, coordenadas, puntos_intermedios=2):
+def preprocesar_vectores(velocidades, pendientes, tiempos, coordenadas, puntos_intermedios=10):
     n_original = len(velocidades)
+    if(n_original < 2):
+        return velocidades, pendientes, tiempos, coordenadas
     n_nuevo = n_original + (n_original - 1) * puntos_intermedios
     
     x_original = np.arange(n_original)
@@ -70,6 +72,12 @@ async def moto_consume(rutas, estaciones, nombre, client, token, profile):
             moto.change_route(new_route)
 
         step_result = moto.avanzar_paso()
+        
+    speeds = []
+    print(
+        speeds.extend([seg["speeds"] for seg in moto.route_data])
+    )
+
 
     return {
         "geometry":{
