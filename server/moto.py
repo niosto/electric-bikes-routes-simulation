@@ -8,11 +8,11 @@ class Moto:
         self.route_data = route_data
         self.stations = stations
         self.positions = []
-        self.battery_state = 300
-        self.in_charge = False
-        self.umbral_energia = 0.9 * self.battery_state
-        self.tiempo_recarga_total = 60
-        self.energy_before_recarga = None
+        self.capacidad_bateria = 2.5
+        self.estado_bateria = self.capacidad_bateria
+        self.en_carga = False
+        self.umbral_energia = self.capacidad_bateria * 0.1
+        self.energia_antes_de_recarga = None
         self.idx = 0
         self.idx_route = 0
         
@@ -24,7 +24,17 @@ class Moto:
         self.power = []
 
     def nearest_station(self, current_pos):
-        distancias = [geodesic(current_pos[:2], coords).meters for coords in self.stations["coords"]]
+        destiny = self.route_data[self.idx]["coords"][-1][:2]
+
+        distancias = [geodesic(current_pos[::-1], coords[::-1]).meters
+              + geodesic(coords[::-1], destiny[::-1]).meters
+               for coords in self.stations["coords"]]
+        
+        # COndicional para saber si la distancia es 
+        #din = min(distancias)
+        #if self.estado_bateria   
+        # Unidad de la bateria kiloVatios
+         
         idx_est = distancias.index(min(distancias))
         return idx_est
 
@@ -37,19 +47,18 @@ class Moto:
         })
 
     def change_route(self, new_route):
-        self.route_data[self.idx]["coords"] = self.route_data[self.idx]["coords"][:self.idx_route + 1]
-        self.route_data[self.idx]["speeds"] = self.route_data[self.idx]["speeds"][:self.idx_route + 1]
-        self.route_data[self.idx]["slopes"] = self.route_data[self.idx]["slopes"][:self.idx_route + 1]
+        self.route_data[self.idx]["coords"] = self.route_data[self.idx]["coords"][:self.idx_ruta + 1]
+        self.route_data[self.idx]["speeds"] = self.route_data[self.idx]["speeds"][:self.idx_ruta + 1]
+        self.route_data[self.idx]["slopes"] = self.route_data[self.idx]["slopes"][:self.idx_ruta + 1]
 
         self.route_data = self.route_data[:self.idx + 1] + new_route + self.route_data[self.idx + 1:] 
 
         self.idx_route += 1
 
     def charge(self):
-        energy_charged = 700.0 - self.battery_state
-        self.battery_state = 700.0
         self.puntos_recarga_realizados[-1]["energy_charged"] = energy_charged
-        self.in_charge = False
+        self.soc_history.append(self.estado_bateria)
+        self.en_carga = False
 
     def consume_step(self):
         hev = HEV()
