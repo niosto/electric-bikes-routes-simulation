@@ -32,26 +32,19 @@ def manage_segments(rutas):
         data = get_vel(segment["steps"], rutas["geometry"]["coordinates"])
         data["duration"] = segment["duration"]
         data["distance"] = segment["distance"]
-        vel_interp, pend_interp, time_interp, coords_interp = preprocesar_vectores(
-            data["speeds"], data["slopes"], data["times"], data["coords"], puntos_intermedios=2)
-        
-        data["speeds"] = vel_interp
-        data["slopes"] = pend_interp
-        data["times"] = time_interp
-        data["coords"] = coords_interp
         rutas_moto.append(data)
     return rutas_moto
 
 async def moto_consume(rutas, estaciones, nombre, client, token, profile):
     rutas_moto = manage_segments(rutas) 
-    moto = Moto(nombre, rutas_moto, estaciones, hybrid_cont=0.5)
+    moto = Moto(nombre, rutas_moto, estaciones)
     step_result = moto.avanzar_paso()
 
     while step_result != 0:
         if step_result == 3:
             print("Cargar")
             # Battery low: reroute to nearest charging station
-            current_pos = moto.route_data[moto.idx]["coords"][moto.idx_ruta][:2]
+            current_pos = moto.route_data[moto.idx]["coords"][moto.idx_route][:2]
 
             idx_est = moto.nearest_station(current_pos)
 
