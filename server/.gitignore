@@ -9,5 +9,4 @@ resources/ej_out.json
 !resources/examples/*.json
 Puntos_de_rutas/
 .vscode/
-resources
-Puntos_de_rutas/
+resources/.

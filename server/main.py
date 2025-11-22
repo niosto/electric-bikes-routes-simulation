@@ -49,17 +49,30 @@ class RoutesRequest(BaseModel):
     options: Options
     vehicles: List[VehicleInput]
 
+def get_estaciones(ubicacion="amva"):
+    estaciones = {}
+    if(ubicacion == "amva"):
+        with open("resources/estaciones_amva.json","r") as f:
+            estaciones = json.load(f)
+    elif (ubicacion == "bog"):
+        with open("resources/estaciones_bog.json","r") as f:
+            estaciones = json.load(f)
+    elif (ubicacion == "med"):
+         with open("resources/estaciones_med.json","r") as f:
+            estaciones = json.load(f)
+    else:
+        raise Exception("Imposible cargar las estaciones")
+    return estaciones
+
 # =================== SALUD ===================
 @app.get("/health")
 def health():
     return {"ok": True, "provider": "ors", "has_token": bool(ORS_TOKEN)}
 
 @app.get("/estaciones")
-async def estaciones():
+def estaciones():
     try:
-        with open("resources/estaciones_med.json","r") as f:
-            estaciones_med = json.load(f)
-            return estaciones_med
+        return get_estaciones()
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error: {e}")
 
@@ -95,10 +108,9 @@ async def routes(body: RoutesRequest):
                     alt_weight=body.options.alt_weight,
                 )
 
-                with open("resources/estaciones_med.json","r") as f:
-                    estaciones_med = json.load(f)
+                estaciones = get_estaciones()
 
-                data = await moto_consume(r, estaciones_med, f"moto-{idx}", client, ORS_TOKEN, body.options.profile)
+                data = await moto_consume(r, estaciones, f"moto-{idx}", client, ORS_TOKEN, body.options.profile)
 
             except httpx.RequestError as e:
                 raise HTTPException(status_code=502, detail=f"Error de red ORS: {e!s}")
