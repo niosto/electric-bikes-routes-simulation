@@ -65,26 +65,25 @@ async def moto_consume(rutas, estaciones, nombre, client, token, profile):
             moto.change_route(new_route)
 
         step_result = moto.avanzar_paso()
-        
+
     speeds = []
-    print(
-        speeds.extend([seg["speeds"] for seg in moto.route_data])
-    )
-
-
+    for ruta in moto.route_data:
+        speeds.extend(ruta["speeds"])
+        
     return {
         "geometry":{
             "coordinates": [[lon, lat] for lon,lat,_ in moto.positions],
             "type":"LineString"
         },
         "properties":{
-            "potencia":moto.power,
-            "soc": moto.soc_history,
+            "potencia" : moto.power,
+            "soc" : moto.soc_history,
+            "speeds" : speeds
         },
         "summary":{
-            "distance":moto.distance,
-            "duration":moto.duration
+            "distance" : moto.distance,
+            "duration" : moto.duration
         },
-        "alternatives":[],
-        "charge_points": moto.puntos_recarga_realizados
+        "alternatives" : [],
+        "charge_points" : moto.puntos_recarga_realizados
     }
