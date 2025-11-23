@@ -58,17 +58,21 @@ export default function StatsPanel({
 
   
   // === 3. Datos para gráficas (potencia & SoC) ===
-  const powerSocData = useMemo(() => {
+    const powerSocData = useMemo(() => {
     const pot = activeRoute?.properties?.potencia;
     const soc = activeRoute?.properties?.soc;
+    const speeds = activeRoute?.properties?.speeds; // <-- nuevo
+
     if (!Array.isArray(pot) || !Array.isArray(soc)) return [];
-    
+
     return pot.map((p, idx) => ({
       idx,
       power: p,
       soc: soc[idx] ?? null,
+      speed: Array.isArray(speeds) ? speeds[idx] ?? null : null, // <-- nuevo
     }));
   }, [activeRoute]);
+
   
   const avgPower = useMemo(() => {
     if (!powerSocData.length) return null;
@@ -137,10 +141,10 @@ export default function StatsPanel({
     if (Number.isFinite(durationMin))
       rows.push(`# Duración (min): ${durationMin.toFixed(2)}`);
     rows.push("");
-    rows.push("segmento,potencia,soc");
+    rows.push("segmento,potencia,soc,velocidad_kmh");
 
     powerSocData.forEach((d) => {
-      rows.push(`${d.idx},${d.power},${d.soc ?? ""}`);
+      rows.push(`${d.idx},${d.power},${d.soc ?? ""},${d.speed ?? ""}`);
     });
 
     const blob = new Blob([rows.join("\n")], {
@@ -415,6 +419,48 @@ export default function StatsPanel({
             </p>
           )}
         </div>
+                {/* ===== Tarjeta 6: Velocidad por segmento ===== */}
+        <div className="stats-card">
+          <h3>Velocidad por segmento</h3>
+          {powerSocData.length ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart
+                data={powerSocData}
+                margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+              >
+                <XAxis
+                  dataKey="idx"
+                  tick={{ fontSize: 10 }}
+                  label={{
+                    value: "Segmento",
+                    position: "insideBottomRight",
+                    offset: -4,
+                  }}
+                />
+                <YAxis
+                  tick={{ fontSize: 10 }}
+                  label={{
+                    value: "Velocidad (km/h)",
+                    angle: -90,
+                    position: "insideLeft",
+                  }}
+                />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="speed"
+                  name="Velocidad (km/h)"
+                  dot={false}
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p>No hay datos de velocidad todavía.</p>
+          )}
+        </div>
+
       </div>
     </>
   );

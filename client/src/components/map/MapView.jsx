@@ -10,6 +10,7 @@ import {
   GeoJSON,
   useMapEvents,
   Tooltip,
+  useMap,
 } from "react-leaflet";
 import { COLORS } from "../../utils/colors.js";
 import { makeColoredIcon } from "../../utils/icons.js";
@@ -30,6 +31,15 @@ function ClickToAdd({ onAdd }) {
   return null;
 }
 
+// Componente para recentrar el mapa cuando cambia la ciudad
+function RecenterOnCity({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center);
+  }, [center, map]);
+  return null;
+}
+
 // Custom icon for charging stations
 const chargingIcon = new L.DivIcon({
   className: "charging-station-icon",
@@ -42,7 +52,7 @@ const chargingIcon = new L.DivIcon({
       <path d="M17 6 L9 20 H17 L13 30 L25 14 H17 Z" fill="white" stroke="#ffffffff" stroke-width="1.0" />
     </svg>`,
   iconSize: [32, 32],
-  iconAnchor: [16,16],
+  iconAnchor: [16, 16],
 });
 
 // ================== MAIN MAP COMPONENT ==================
@@ -58,8 +68,13 @@ export default function MapView({
   setSelectedAlt = () => {},
   importedGeoJSON,
   drawOnly = false,
+  city = "med", // 👈 NUEVO: "med" o "bog"
 }) {
-  const center = [6.2442, -75.5812];
+  // Centro según ciudad
+  const center = useMemo(
+    () => (city === "bog" ? [4.711, -74.072] : [6.2442, -75.5812]),
+    [city]
+  );
 
   // ========= POIs / Charging Stations =========
   const [chargingStations, setChargingStations] = useState([]);
@@ -67,7 +82,9 @@ export default function MapView({
   useEffect(() => {
     async function fetchStations() {
       try {
-        const res = await axios.get("http://localhost:8000/estaciones");
+        const res = await axios.get(
+          `http://localhost:8000/estaciones?city=${city}`
+        );
         const data = res.data;
 
         if (data?.coords && data?.nombre) {
@@ -85,7 +102,7 @@ export default function MapView({
     }
 
     fetchStations();
-  }, []);
+  }, [city]);
   // ============================================
 
   // Mapa de colores para capas importadas
@@ -145,6 +162,9 @@ export default function MapView({
         zoomControl
         preferCanvas
       >
+        {/* recenter cuando cambie la ciudad */}
+        <RecenterOnCity center={center} />
+
         <LayersControl position="topright">
           <LayersControl.BaseLayer checked name="CARTO (proxy local)">
             <TileLayer
@@ -202,7 +222,9 @@ export default function MapView({
             if (!info) return null;
             const sel = selectedAlt?.[v.id] ?? 0;
             const chosen =
-              sel === 0 ? info.geometry : info.alternatives?.[sel - 1]?.geometry;
+              sel === 0
+                ? info.geometry
+                : info.alternatives?.[sel - 1]?.geometry;
             if (!chosen?.coordinates?.length) return null;
             const coords = chosen.coordinates.map(([lng, lat]) => [lat, lng]);
             return (
@@ -213,7 +235,8 @@ export default function MapView({
               />
             );
           })}
-        {/* Puntos de carga */}
+
+        {/* Puntos de carga realizados */}
         {!drawOnly &&
           Object.entries(routes).map(([vehicleId, routeData], idx) => {
             if (!routeData?.charge_points?.length) return null;
@@ -228,9 +251,9 @@ export default function MapView({
                 />
               );
             });
-        })}
+          })}
 
-        {/*Estaciones de carga */}
+        {/* Estaciones de carga */}
         {chargingStations.map((station, idx) => (
           <Marker
             key={`station-${idx}`}
