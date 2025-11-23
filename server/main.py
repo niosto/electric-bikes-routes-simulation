@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
 from fastapi import FastAPI, HTTPException, Path, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -12,7 +12,9 @@ import json
 
 load_dotenv()
 
-ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")]
+ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+]
 ORS_TOKEN = os.getenv("ORS_TOKEN", "")
 PORT = int(os.getenv("PORT", "8000"))
 
@@ -30,9 +32,11 @@ app.add_middleware(
 class Waypoint(BaseModel):
     coordinates: List[float]  # [lng, lat] o [lng, lat, alt]
 
+
 class VehicleInput(BaseModel):
     vehicle_id: str
     waypoints: List[Waypoint] = Field(default_factory=list)
+
 
 class Options(BaseModel):
     profile: str = "driving"
@@ -44,37 +48,51 @@ class Options(BaseModel):
     alt_count: int = 3
     alt_share: float = 0.6
     alt_weight: float = 1.4
+    # Ciudad del mapa / estaciones
+    city: str = "med"  # "med", "bog" o "amva"
+
 
 class RoutesRequest(BaseModel):
     options: Options
     vehicles: List[VehicleInput]
 
-def get_estaciones(ubicacion="amva"):
+
+def get_estaciones(ubicacion: str = "amva"):
     estaciones = {}
-    if(ubicacion == "amva"):
-        with open("resources/estaciones_amva.json","r") as f:
+    if ubicacion == "amva":
+        with open("resources/estaciones_amva.json", "r") as f:
             estaciones = json.load(f)
-    elif (ubicacion == "bog"):
-        with open("resources/estaciones_bog.json","r") as f:
+    elif ubicacion == "bog":
+        with open("resources/estaciones_bog.json", "r") as f:
             estaciones = json.load(f)
-    elif (ubicacion == "med"):
-         with open("resources/estaciones_med.json","r") as f:
+    elif ubicacion == "med":
+        with open("resources/estaciones_med.json", "r") as f:
             estaciones = json.load(f)
     else:
         raise Exception("Imposible cargar las estaciones")
     return estaciones
+
 
 # =================== SALUD ===================
 @app.get("/health")
 def health():
     return {"ok": True, "provider": "ors", "has_token": bool(ORS_TOKEN)}
 
+
+# =================== ESTACIONES ===================
 @app.get("/estaciones")
-def estaciones():
+def estaciones(city: str = "amva"):
+    """
+    Devuelve estaciones dependiendo de la ciudad:
+    - "amva" (default)
+    - "med"
+    - "bog"
+    """
     try:
-        return get_estaciones()
+        return get_estaciones(city)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error: {e}")
+
 
 # =================== RUTAS: JSON simple ===================
 @app.post("/routes")
@@ -82,15 +100,18 @@ async def routes(body: RoutesRequest):
     idx = 1
 
     if not ORS_TOKEN:
-        raise HTTPException(status_code=500, detail="ORS_TOKEN no configurado en .env")
-    
+        raise HTTPException(
+            status_code=500, detail="ORS_TOKEN no configurado en .env"
+        )
+
+    city = body.options.city or "med"
+
     out: List[Dict[str, Any]] = []
     async with httpx.AsyncClient(timeout=30) as client:
-
         for v in body.vehicles:
             if len(v.waypoints) < 2:
                 continue
-            coords = _to2d([wp.coordinates for wp in v.waypoints])  # 👈 2D aquí también
+            coords = _to2d([wp.coordinates for wp in v.waypoints])
             if len(coords) < 2:
                 continue
             try:
@@ -108,39 +129,56 @@ async def routes(body: RoutesRequest):
                     alt_weight=body.options.alt_weight,
                 )
 
-                estaciones = get_estaciones()
+                estaciones = get_estaciones(city)
 
-                data = await moto_consume(r, estaciones, f"moto-{idx}", client, ORS_TOKEN, body.options.profile)
+                data = await moto_consume(
+                    rutas=r,
+                    estaciones=estaciones,
+                    nombre=f"moto-{idx}",
+                    client=client,
+                    token=ORS_TOKEN,
+                    profile=body.options.profile,
+                    city=city,
+                )
 
             except httpx.RequestError as e:
-                raise HTTPException(status_code=502, detail=f"Error de red ORS: {e!s}")
-            
+                raise HTTPException(
+                    status_code=502, detail=f"Error de red ORS: {e!s}"
+                )
+
             idx += 1
 
             out.append({"vehicle_id": v.vehicle_id, **data})
 
-    with open("resources/ej_out.json","w")as f:
-        json.dump({"routes": out},f,indent=2)
+    # Debug opcional
+    with open("resources/ej_out.json", "w") as f:
+        json.dump({"routes": out}, f, indent=2)
 
     return {"routes": out}
+
 
 # =================== RUTAS: GeoJSON FeatureCollection ===================
 @app.post("/routes/geojson")
 async def routes_geojson(request: Request):
     if not ORS_TOKEN:
-        raise HTTPException(status_code=500, detail="ORS_TOKEN no configurado en .env")
+        raise HTTPException(
+            status_code=500, detail="ORS_TOKEN no configurado en .env"
+        )
 
     body = await request.json()
     if body.get("type") != "FeatureCollection" or "features" not in body:
-        raise HTTPException(status_code=400, detail="Se esperaba un FeatureCollection GeoJSON")
+        raise HTTPException(
+            status_code=400, detail="Se esperaba un FeatureCollection GeoJSON"
+        )
 
     profile = (request.query_params.get("profile") or "driving").lower()
     steps = (request.query_params.get("steps") or "true").lower() == "true"
     geometries = request.query_params.get("geometries") or "geojson"
-    # Si quieres excluir, parsea ?exclude=toll,motorway
     exclude: List[str] = []
 
-    want_alts = (request.query_params.get("alternatives") or "false").lower() == "true"
+    want_alts = (
+        (request.query_params.get("alternatives") or "false").lower() == "true"
+    )
     alt_count = int(request.query_params.get("alt_count") or 3)
     alt_share = float(request.query_params.get("alt_share") or 0.6)
     alt_weight = float(request.query_params.get("alt_weight") or 1.4)
@@ -153,11 +191,13 @@ async def routes_geojson(request: Request):
             geom = (feat or {}).get("geometry") or {}
             if geom.get("type") != "LineString":
                 continue
-            coords = _to2d(geom.get("coordinates") or [])  # 2D
+            coords = _to2d(geom.get("coordinates") or [])
             if len(coords) < 2:
                 continue
 
-            vehicle_id = ((feat.get("properties") or {}).get("vehicle_id")) or f"moto-{idx}"
+            vehicle_id = (
+                (feat.get("properties") or {}).get("vehicle_id")
+            ) or f"moto-{idx}"
             idx += 1
 
             try:
@@ -175,19 +215,23 @@ async def routes_geojson(request: Request):
                     alt_weight=alt_weight,
                 )
             except httpx.RequestError as e:
-                raise HTTPException(status_code=502, detail=f"Error de red ORS: {e!s}")
+                raise HTTPException(
+                    status_code=502, detail=f"Error de red ORS: {e!s}"
+                )
 
             out.append({"vehicle_id": vehicle_id, **r})
 
     return {"routes": out}
 
+
 # =================== GEOJSON echo/validador ===================
 @app.post("/geojson")
 async def geojson_echo(req: Request):
-    data = await req.json()
-    if data.get("type") != "FeatureCollection":
-        raise HTTPException(status_code=400, detail="Se esperaba FeatureCollection")
-    return {"ok": True, "received": data}
+  data = await req.json()
+  if data.get("type") != "FeatureCollection":
+      raise HTTPException(status_code=400, detail="Se esperaba FeatureCollection")
+  return {"ok": True, "received": data}
+
 
 # =================== TILE PROXY ===================
 @app.get("/tiles/carto/{z}/{x}/{y}.png")
@@ -212,13 +256,21 @@ async def tile_carto(
         try:
             r = await client.get(url)
         except httpx.RequestError as e:
-            raise HTTPException(status_code=502, detail=f"Error trayendo tile Carto: {e!s}")
+            raise HTTPException(
+                status_code=502, detail=f"Error trayendo tile Carto: {e!s}"
+            )
 
     if r.status_code != 200:
-        raise HTTPException(status_code=r.status_code, detail=f"Carto devolvió {r.status_code}")
+        raise HTTPException(
+            status_code=r.status_code, detail=f"Carto devolvió {r.status_code}"
+        )
 
-    headers = {"Content-Type": "image/png", "Cache-Control": "public, max-age=86400"}
+    headers = {
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=86400",
+    }
     return Response(content=r.content, headers=headers, media_type="image/png")
+
 
 @app.get("/tiles/osm/{z}/{x}/{y}.png")
 async def tile_osm(
@@ -231,10 +283,17 @@ async def tile_osm(
         try:
             r = await client.get(url)
         except httpx.RequestError as e:
-            raise HTTPException(status_code=502, detail=f"Error trayendo tile OSM: {e!s}")
+            raise HTTPException(
+                status_code=502, detail=f"Error trayendo tile OSM: {e!s}"
+            )
 
     if r.status_code != 200:
-        raise HTTPException(status_code=r.status_code, detail=f"OSM devolvió {r.status_code}")
+        raise HTTPException(
+            status_code=r.status_code, detail=f"OSM devolvió {r.status_code}"
+        )
 
-    headers = {"Content-Type": "image/png", "Cache-Control": "public, max-age=86400"}
+    headers = {
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=86400",
+    }
     return Response(content=r.content, headers=headers, media_type="image/png")
