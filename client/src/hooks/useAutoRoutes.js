@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as api from "../services/api.js";
 
+/**
+ * Hook para calcular rutas automáticamente cuando cambian:
+ * - vehículos
+ * - opciones
+ * - ciudad (med | bog | amva)
+ */
 export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }) {
   const [routes, setRoutes] = useState({});
   const [selectedAlt, setSelectedAlt] = useState({});
@@ -18,6 +24,7 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
   const abortRef = useRef(null);
   const genRef = useRef(0);
 
+  // Cancela peticiones pendientes tanto de debounce como abort
   const cancelPending = () => {
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
@@ -30,20 +37,26 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
     genRef.current += 1;
   };
 
+  // Limpia rutas y alternativas de vehículos que ya no tengan
+  // suficientes puntos
   const cleanNow = (vlist) => {
     setRoutes((prev) => {
       const next = { ...prev };
       vlist.forEach((v) => {
-        if (v.waypoints.length < 2 && next[v.id]) delete next[v.id];
+        if (v.waypoints.length < 2 && next[v.id]) {
+          delete next[v.id];
+        }
       });
       return next;
     });
     setSelectedAlt((prev) => {
-      const n = { ...prev };
+      const next = { ...prev };
       vlist.forEach((v) => {
-        if (v.waypoints.length < 2 && n[v.id] !== undefined) delete n[v.id];
+        if (v.waypoints.length < 2 && next[v.id] !== undefined) {
+          delete next[v.id];
+        }
       });
-      return n;
+      return next;
     });
   };
 
@@ -58,14 +71,16 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
 
     cancelPending();
     const localGen = ++genRef.current;
+
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
+    // Enviar la ciudad al back
     const safeOptions = {
       ...options,
       alternatives: false,
       steps: true,
-      city, // 👈 NUEVO
+      city, // 👈 soporte para med | bog | amva
     };
 
     const data = await api
@@ -97,7 +112,9 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
     setSelectedAlt((prev) => {
       const next = { ...prev };
       ready.forEach((r) => {
-        if (next[r.vehicle_id] == null) next[r.vehicle_id] = 0;
+        if (next[r.vehicle_id] == null) {
+          next[r.vehicle_id] = 0;
+        }
       });
       return next;
     });
@@ -110,11 +127,15 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
       setSelectedAlt({});
       return;
     }
+
     cleanNow(vehicles);
+
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
     debounceTimer.current = setTimeout(() => recompute(vehicles), 250);
+
     return () => clearTimeout(debounceTimer.current);
-  }, [vehicles, options, enabled, city]); // 👈 NUEVO
+  }, [vehicles, options, enabled, city]); // 👈 recalcular cuando cambie la ciudad
 
   const computeRoutesManual = () => {
     if (enabled) {
@@ -123,10 +144,13 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
     }
   };
 
+  // Resumen total (distancia y tiempo de TODAS las motos)
   const totalSummary = useMemo(() => {
-    const entries = Object.values(routes);
-    const dist = entries.reduce((s, r) => s + (r?.summary?.distance || 0), 0);
-    const dur = entries.reduce((s, r) => s + (r?.summary?.duration || 0), 0);
+    const list = Object.values(routes);
+
+    const dist = list.reduce((s, r) => s + (r?.summary?.distance || 0), 0);
+    const dur = list.reduce((s, r) => s + (r?.summary?.duration || 0), 0);
+
     return {
       distance_km: (dist / 1000).toFixed(2),
       duration_min: (dur / 60).toFixed(1),

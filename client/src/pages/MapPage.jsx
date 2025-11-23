@@ -26,13 +26,13 @@ export default function MapPage() {
   const [importedGeoJSON, setImportedGeoJSON] = useState(null);
   const [drawOnly, setDrawOnly] = useState(false);
 
-  // Ciudad activa del mapa: Medellín o Bogotá
-  const [city, setCity] = useState("med"); // "med" o "bog"
+  // Ciudad activa del mapa: Medellín, Bogotá o AMVA
+  const [city, setCity] = useState("med"); // "med" | "bog" | "amva"
 
   // cuando hay archivo cargado, no se calculan rutas
   const vehiclesForRouting = drawOnly ? [] : vehicles;
 
-  // Hook de rutas, ahora recibe city
+  // Hook de rutas, recibe también la ciudad
   const {
     options,
     setOptions,
@@ -57,11 +57,11 @@ export default function MapPage() {
     setDrawOnly(false);
   };
 
-  // 👇 NUEVO: cuando cambias de ciudad, se limpian rutas y waypoints
+  // Cuando cambias de ciudad, se limpian rutas, waypoints y geoJSON
   const handleChangeCity = (newCity) => {
     if (newCity === city) return;
 
-    // Limpiar todo el estado de rutas/waypoints
+    // Limpiar todo el estado relacionado con la ruta actual
     clearAll();              // limpia waypoints / vehículos según tu hook
     setImportedGeoJSON(null);
     setDrawOnly(false);
@@ -100,6 +100,14 @@ export default function MapPage() {
                 onClick={() => handleChangeCity("bog")}
               >
                 Bogotá
+              </button>
+
+              <button
+                type="button"
+                className={`btn small ${city === "amva" ? "" : "ghost"}`}
+                onClick={() => handleChangeCity("amva")}
+              >
+                AMVA
               </button>
             </div>
           </div>
