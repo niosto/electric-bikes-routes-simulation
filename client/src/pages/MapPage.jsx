@@ -26,13 +26,13 @@ export default function MapPage() {
   const [importedGeoJSON, setImportedGeoJSON] = useState(null);
   const [drawOnly, setDrawOnly] = useState(false);
 
-  // 👇 NUEVO — Ciudad activa del mapa: Medellín o Bogotá
+  // Ciudad activa del mapa: Medellín o Bogotá
   const [city, setCity] = useState("med"); // "med" o "bog"
 
   // cuando hay archivo cargado, no se calculan rutas
   const vehiclesForRouting = drawOnly ? [] : vehicles;
 
-  // 👇 Pasamos "city" al hook de rutas
+  // Hook de rutas, ahora recibe city
   const {
     options,
     setOptions,
@@ -44,7 +44,7 @@ export default function MapPage() {
   } = useAutoRoutes({
     vehicles: vehiclesForRouting,
     enabled: !drawOnly,
-    city, // 👈 NUEVO
+    city,
   });
 
   const handleGeoLoad = (fc) => {
@@ -57,6 +57,20 @@ export default function MapPage() {
     setDrawOnly(false);
   };
 
+  // 👇 NUEVO: cuando cambias de ciudad, se limpian rutas y waypoints
+  const handleChangeCity = (newCity) => {
+    if (newCity === city) return;
+
+    // Limpiar todo el estado de rutas/waypoints
+    clearAll();              // limpia waypoints / vehículos según tu hook
+    setImportedGeoJSON(null);
+    setDrawOnly(false);
+    setLastPoint(null);
+
+    // Cambiar ciudad
+    setCity(newCity);
+  };
+
   return (
     <section className="page">
       {/* bloque superior: sidebar + mapa */}
@@ -64,7 +78,7 @@ export default function MapPage() {
         <aside className="sidebar">
 
           {/* ============================
-              Selector de ciudad (NUEVO)
+              Selector de ciudad
              ============================ */}
           <div style={{ marginBottom: "1rem" }}>
             <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>
@@ -75,7 +89,7 @@ export default function MapPage() {
               <button
                 type="button"
                 className={`btn small ${city === "med" ? "" : "ghost"}`}
-                onClick={() => setCity("med")}
+                onClick={() => handleChangeCity("med")}
               >
                 Medellín
               </button>
@@ -83,7 +97,7 @@ export default function MapPage() {
               <button
                 type="button"
                 className={`btn small ${city === "bog" ? "" : "ghost"}`}
-                onClick={() => setCity("bog")}
+                onClick={() => handleChangeCity("bog")}
               >
                 Bogotá
               </button>
@@ -130,7 +144,7 @@ export default function MapPage() {
             setSelectedAlt={setSelectedAlt}
             importedGeoJSON={importedGeoJSON}
             drawOnly={drawOnly}
-            city={city}     // 👈 NUEVO
+            city={city}
           />
         </div>
       </div>
