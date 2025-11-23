@@ -29,10 +29,13 @@ export default function MapPage() {
   // Ciudad activa del mapa: Medellín, Bogotá o AMVA
   const [city, setCity] = useState("med"); // "med" | "bog" | "amva"
 
+  // NUEVO: estado de tráfico
+  const [traffic, setTraffic] = useState(false); // booleano a enviar al back
+
   // cuando hay archivo cargado, no se calculan rutas
   const vehiclesForRouting = drawOnly ? [] : vehicles;
 
-  // Hook de rutas, recibe también la ciudad
+  // Hook de rutas, recibe también la ciudad y el tráfico
   const {
     options,
     setOptions,
@@ -45,6 +48,7 @@ export default function MapPage() {
     vehicles: vehiclesForRouting,
     enabled: !drawOnly,
     city,
+    traffic, // 👈 nuevo
   });
 
   const handleGeoLoad = (fc) => {
@@ -62,7 +66,7 @@ export default function MapPage() {
     if (newCity === city) return;
 
     // Limpiar todo el estado relacionado con la ruta actual
-    clearAll();              // limpia waypoints / vehículos según tu hook
+    clearAll();
     setImportedGeoJSON(null);
     setDrawOnly(false);
     setLastPoint(null);
@@ -110,6 +114,23 @@ export default function MapPage() {
                 AMVA
               </button>
             </div>
+          </div>
+
+          {/* ============================
+              Selector de TRÁFICO (NUEVO)
+             ============================ */}
+          <div style={{ marginBottom: "1.2rem" }}>
+            <label style={{ fontSize: "0.9rem", fontWeight: 600 }}>
+              Condición de tráfico:
+            </label>
+
+            <button
+              type="button"
+              className={`btn small ${traffic ? "" : "ghost"}`}
+              onClick={() => setTraffic(!traffic)}
+            >
+              {traffic ? "Con tráfico" : "Sin tráfico"}
+            </button>
           </div>
 
           {/* ============================

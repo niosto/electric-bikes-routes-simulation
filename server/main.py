@@ -44,12 +44,17 @@ class Options(BaseModel):
     steps: bool = True
     geometries: str = "geojson"
     exclude: List[str] = Field(default_factory=list)
+
     # Alternativas ORS
     alt_count: int = 3
     alt_share: float = 0.6
     alt_weight: float = 1.4
+
     # Ciudad del mapa / estaciones
-    city: str = "med"  # "med", "bog" o "amva"
+    city: str = "med"   # "med", "bog" o "amva"
+
+    # 🚦 Nuevo: tráfico ON/OFF (para Azure)
+    traffic: bool = False
 
 
 class RoutesRequest(BaseModel):
@@ -105,6 +110,10 @@ async def routes(body: RoutesRequest):
         )
 
     city = body.options.city or "med"
+    traffic = body.options.traffic  # 👈 ya disponible
+
+    # Tu compañero lo usará para Azure.
+    # print("TRAFFIC = ", traffic)
 
     out: List[Dict[str, Any]] = []
     async with httpx.AsyncClient(timeout=30) as client:
@@ -141,13 +150,15 @@ async def routes(body: RoutesRequest):
                     city=city,
                 )
 
+                # 👇 Aquí tu compañero podrá insertar algo como:
+                # data["traffic_used"] = traffic
+
             except httpx.RequestError as e:
                 raise HTTPException(
                     status_code=502, detail=f"Error de red ORS: {e!s}"
                 )
 
             idx += 1
-
             out.append({"vehicle_id": v.vehicle_id, **data})
 
     # Debug opcional
@@ -224,13 +235,13 @@ async def routes_geojson(request: Request):
     return {"routes": out}
 
 
-# =================== GEOJSON echo/validador ===================
+# =================== GEOJSON echo ===================
 @app.post("/geojson")
 async def geojson_echo(req: Request):
-  data = await req.json()
-  if data.get("type") != "FeatureCollection":
-      raise HTTPException(status_code=400, detail="Se esperaba FeatureCollection")
-  return {"ok": True, "received": data}
+    data = await req.json()
+    if data.get("type") != "FeatureCollection":
+        raise HTTPException(status_code=400, detail="Se esperaba FeatureCollection")
+    return {"ok": True, "received": data}
 
 
 # =================== TILE PROXY ===================
