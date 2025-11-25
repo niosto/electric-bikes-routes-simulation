@@ -1,7 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as api from "../services/api.js";
 
-export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }) {
+/**
+ * Hook para calcular rutas automáticamente cuando cambian:
+ * - vehículos
+ * - opciones
+ * - ciudad (med | bog | amva)
+ * - tráfico (true | false)
+ */
+export default function useAutoRoutes({
+  vehicles,
+  enabled = true,
+  city = "med",
+  traffic = false, // 👈 nuevo parámetro
+}) {
   const [routes, setRoutes] = useState({});
   const [selectedAlt, setSelectedAlt] = useState({});
   const [options, setOptions] = useState({
@@ -18,6 +30,7 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
   const abortRef = useRef(null);
   const genRef = useRef(0);
 
+  // Cancela peticiones pendientes
   const cancelPending = () => {
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
@@ -30,6 +43,7 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
     genRef.current += 1;
   };
 
+  // Limpia rutas de vehículos sin suficientes puntos
   const cleanNow = (vlist) => {
     setRoutes((prev) => {
       const next = { ...prev };
@@ -38,12 +52,14 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
       });
       return next;
     });
+
     setSelectedAlt((prev) => {
-      const n = { ...prev };
+      const next = { ...prev };
       vlist.forEach((v) => {
-        if (v.waypoints.length < 2 && n[v.id] !== undefined) delete n[v.id];
+        if (v.waypoints.length < 2 && next[v.id] !== undefined)
+          delete next[v.id];
       });
-      return n;
+      return next;
     });
   };
 
@@ -57,15 +73,18 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
     if (ready.length === 0) return;
 
     cancelPending();
+
     const localGen = ++genRef.current;
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
+    // 👇 Enviar ciudad + tráfico al backend
     const safeOptions = {
       ...options,
       alternatives: false,
       steps: true,
-      city, // 👈 NUEVO
+      city,
+      traffic, // 👈 enviar estado de tráfico
     };
 
     const data = await api
@@ -110,11 +129,15 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
       setSelectedAlt({});
       return;
     }
+
     cleanNow(vehicles);
+
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
     debounceTimer.current = setTimeout(() => recompute(vehicles), 250);
+
     return () => clearTimeout(debounceTimer.current);
-  }, [vehicles, options, enabled, city]); // 👈 NUEVO
+  }, [vehicles, options, enabled, city, traffic]); // 👈 recalcular también si cambia tráfico
 
   const computeRoutesManual = () => {
     if (enabled) {
@@ -123,10 +146,12 @@ export default function useAutoRoutes({ vehicles, enabled = true, city = "med" }
     }
   };
 
+  // Resumen total
   const totalSummary = useMemo(() => {
-    const entries = Object.values(routes);
-    const dist = entries.reduce((s, r) => s + (r?.summary?.distance || 0), 0);
-    const dur = entries.reduce((s, r) => s + (r?.summary?.duration || 0), 0);
+    const list = Object.values(routes);
+    const dist = list.reduce((s, r) => s + (r?.summary?.distance || 0), 0);
+    const dur = list.reduce((s, r) => s + (r?.summary?.duration || 0), 0);
+
     return {
       distance_km: (dist / 1000).toFixed(2),
       duration_min: (dur / 60).toFixed(1),

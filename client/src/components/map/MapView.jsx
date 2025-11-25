@@ -45,17 +45,13 @@ const chargingIcon = new L.DivIcon({
   className: "charging-station-icon",
   html: `
     <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-      <!-- Circle background -->
       <circle cx="18" cy="18" r="16" fill="#000000ff" stroke="#000000ff" stroke-width="1.5" />
-      
-      <!-- Lightning bolt -->
       <path d="M17 6 L9 20 H17 L13 30 L25 14 H17 Z" fill="white" stroke="#ffffffff" stroke-width="1.0" />
     </svg>`,
   iconSize: [32, 32],
   iconAnchor: [16, 16],
 });
 
-// ================== MAIN MAP COMPONENT ==================
 export default function MapView({
   vehicles,
   activeVehicle,
@@ -68,13 +64,14 @@ export default function MapView({
   setSelectedAlt = () => {},
   importedGeoJSON,
   drawOnly = false,
-  city = "med", // 👈 NUEVO: "med" o "bog"
+  city = "med", // 👈 SOPORTA "med", "bog" y "amva"
 }) {
-  // Centro según ciudad
-  const center = useMemo(
-    () => (city === "bog" ? [4.711, -74.072] : [6.2442, -75.5812]),
-    [city]
-  );
+  // Centro depende de la ciudad
+  const center = useMemo(() => {
+    if (city === "bog") return [4.711, -74.072];      // Bogotá
+    if (city === "amva") return [6.247, -75.565];     // Valle de Aburrá (AMVA)
+    return [6.2442, -75.5812];                        // Medellín
+  }, [city]);
 
   // ========= POIs / Charging Stations =========
   const [chargingStations, setChargingStations] = useState([]);
@@ -103,9 +100,9 @@ export default function MapView({
 
     fetchStations();
   }, [city]);
+
   // ============================================
 
-  // Mapa de colores para capas importadas
   const importedColorMap = useMemo(() => {
     const map = new Map();
     if (importedGeoJSON?.features?.length) {
@@ -124,7 +121,6 @@ export default function MapView({
     return map;
   }, [importedGeoJSON?.features?.length]);
 
-  // Iconos de marcadores por vehículo
   const markerIcons = useMemo(
     () =>
       vehicles.map((_, i) => ({
@@ -162,7 +158,6 @@ export default function MapView({
         zoomControl
         preferCanvas
       >
-        {/* recenter cuando cambie la ciudad */}
         <RecenterOnCity center={center} />
 
         <LayersControl position="topright">
@@ -198,7 +193,7 @@ export default function MapView({
           />
         )}
 
-        {/* Waypoints de vehículos */}
+        {/* Waypoints */}
         {!drawOnly &&
           vehicles.map((v, vi) =>
             v.waypoints.map((wp, idx) => {
@@ -220,13 +215,17 @@ export default function MapView({
           vehicles.map((v, idx) => {
             const info = routes[v.id];
             if (!info) return null;
+
             const sel = selectedAlt?.[v.id] ?? 0;
             const chosen =
               sel === 0
                 ? info.geometry
                 : info.alternatives?.[sel - 1]?.geometry;
+
             if (!chosen?.coordinates?.length) return null;
+
             const coords = chosen.coordinates.map(([lng, lat]) => [lat, lng]);
+
             return (
               <Polyline
                 key={`route-${v.id}`}
@@ -236,9 +235,9 @@ export default function MapView({
             );
           })}
 
-        {/* Puntos de carga realizados */}
+        {/* Recargas realizadas */}
         {!drawOnly &&
-          Object.entries(routes).map(([vehicleId, routeData], idx) => {
+          Object.entries(routes).map(([vehicleId, routeData]) => {
             if (!routeData?.charge_points?.length) return null;
 
             return routeData.charge_points.map((cp, i) => {
