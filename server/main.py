@@ -51,7 +51,6 @@ class Options(BaseModel):
     # Ciudad del mapa / estaciones
     city: str = "med"  # "med", "bog" o "amva"
 
-
 class RoutesRequest(BaseModel):
     options: Options
     vehicles: List[VehicleInput]
@@ -59,14 +58,15 @@ class RoutesRequest(BaseModel):
 
 def get_estaciones(ubicacion: str = "amva"):
     estaciones = {}
+    ruta_archivo = "resources/data/estaciones"
     if ubicacion == "amva":
-        with open("resources/estaciones_amva.json", "r") as f:
+        with open(f"{ruta_archivo}/estaciones_amva.json", "r") as f:
             estaciones = json.load(f)
     elif ubicacion == "bog":
-        with open("resources/estaciones_bog.json", "r") as f:
+        with open(f"{ruta_archivo}/estaciones_bog.json", "r") as f:
             estaciones = json.load(f)
     elif ubicacion == "med":
-        with open("resources/estaciones_med.json", "r") as f:
+        with open(f"{ruta_archivo}/estaciones_med.json", "r") as f:
             estaciones = json.load(f)
     else:
         raise Exception("Imposible cargar las estaciones")
@@ -81,7 +81,7 @@ def health():
 
 # =================== ESTACIONES ===================
 @app.get("/estaciones")
-def estaciones(city: str = "amva"):
+async def estaciones(city: str = "amva"):
     """
     Devuelve estaciones dependiendo de la ciudad:
     - "amva" (default)
