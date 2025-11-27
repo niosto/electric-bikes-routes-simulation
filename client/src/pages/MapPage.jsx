@@ -48,7 +48,7 @@ export default function MapPage() {
     vehicles: vehiclesForRouting,
     enabled: !drawOnly,
     city,
-    traffic, // 👈 nuevo
+    traffic, 
   });
 
   const handleGeoLoad = (fc) => {

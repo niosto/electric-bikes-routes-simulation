@@ -1,6 +1,6 @@
 from moto import Moto
-from petitions import get_vel
-from ors_routes import _fetch_ors_route, _to2d
+from utils import get_vel, get_vel_azure
+from petitions import _fetch_ors_route, _to2d, _fetch_azure_route, _fecth_alt
 import numpy as np
 
 def preprocesar_vectores(velocidades, pendientes, tiempos, coordenadas, puntos_intermedios=10):
@@ -26,30 +26,92 @@ def preprocesar_vectores(velocidades, pendientes, tiempos, coordenadas, puntos_i
     
     return velocidades_interp, pendientes_interp, tiempos_interp, coordenadas_interp
 
-def manage_segments(rutas):
+def manage_segments(rutas, traffic, elevation=None):
     rutas_moto = []
-    for segment in rutas["properties"]["segments"]:
-        data = get_vel(segment["steps"], rutas["geometry"]["coordinates"])
-        data["duration"] = segment["duration"]
-        data["distance"] = segment["distance"]
+
+    if traffic:
+        rutas = rutas["features"]
+
+        data = get_vel_azure(rutas, elevation)
+        data["distance"] = rutas[-1]["properties"]["distanceInMeters"]
+        data["duration"] = rutas[-1]["properties"]["durationInSeconds"]
+
         vel_interp, pend_interp, time_interp, coords_interp = preprocesar_vectores(
-            data["speeds"], data["slopes"], data["times"], data["coords"], puntos_intermedios=2)
-        
+                data["speeds"], data["slopes"], data["times"], data["coords"], puntos_intermedios=2)
         data["speeds"] = vel_interp
         data["slopes"] = pend_interp
         data["times"] = time_interp
         data["coords"] = coords_interp
-        rutas_moto.append(data)
+
+        rutas_moto = data
+    else:
+        for segment in rutas["properties"]["segments"]:
+            data = get_vel(segment["steps"], rutas["geometry"]["coordinates"])
+
+            data["duration"] = segment["duration"]
+            data["distance"] = segment["distance"]
+            vel_interp, pend_interp, time_interp, coords_interp = preprocesar_vectores(
+                data["speeds"], data["slopes"], data["times"], data["coords"], puntos_intermedios=2)
+
+            data["speeds"] = vel_interp
+            data["slopes"] = pend_interp
+            data["times"] = time_interp
+            data["coords"] = coords_interp
+            rutas_moto.append(data)
     return rutas_moto
 
-async def moto_consume(rutas, estaciones, nombre, client, token, profile, city = "med"):
-    rutas_moto = manage_segments(rutas) 
-    moto = Moto(nombre, rutas_moto, estaciones, hybrid_cont=0.5)
+async def route(coords, traffic, ors_token, azure_token, client):
+    rutas_moto = []
+    if traffic:
+        for i in range(len(coords)-1):
+            ruta_azure = await _fetch_azure_route(
+                client=client,
+                token=azure_token,
+                coords=[coords[i], coords[i+1]]
+            )
+
+            ruta_alt = await _fecth_alt(
+                client=client,
+                token=ors_token,
+                coords=ruta_azure["features"][-1]["geometry"]["coordinates"][0]
+            )
+
+            rutas = manage_segments(
+                rutas=ruta_azure,
+                traffic=traffic,
+                elevation=ruta_alt
+            )
+
+            rutas_moto.append(rutas)
+
+    else:
+        ors_route = await _fetch_ors_route(
+                client, ors_token, "driving", coords,
+                steps=True, geometries="geojson", exclude=[]
+            )
+        
+        rutas_moto = manage_segments(
+            rutas= ors_route,
+            traffic=traffic,
+        )
+        
+    return rutas_moto
+
+async def moto_consume(coords, estaciones, nombre, client, ors_token, azure_token, profile, city = "med", traffic=False):
+
+    rutas = await route(
+        coords=coords,
+        traffic=traffic,
+        ors_token=ors_token,
+        azure_token=azure_token,
+        client=client
+    )
+
+    moto = Moto(nombre, rutas, estaciones, hybrid_cont=0.5)
     step_result = moto.avanzar_paso()
 
     while step_result != 0:
         if step_result == 3:
-            print("Cargar")
             # Battery low: reroute to nearest charging station
             current_pos = moto.route_data[moto.idx]["coords"][moto.idx_ruta][:2]
 
@@ -62,14 +124,15 @@ async def moto_consume(rutas, estaciones, nombre, client, token, profile, city =
             moto.add_charge_point(idx_est, current_pos)
 
             # Fetch route to station
-            new_ors_route = await _fetch_ors_route(
-                client, token, profile, [current_pos, station_coord, destiny],
-                steps=True, geometries="geojson", exclude=[]
+            nueva_ruta = await route(
+                coords=[current_pos,station_coord,destiny],
+                traffic=traffic,
+                ors_token=ors_token,
+                azure_token=azure_token,
+                client=client
             )
 
-            new_route = manage_segments(new_ors_route)
-
-            moto.change_route(new_route)
+            moto.change_route(nueva_ruta)
 
         step_result = moto.avanzar_paso()
         

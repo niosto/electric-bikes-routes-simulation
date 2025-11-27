@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 from fastapi import FastAPI, HTTPException, Path, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from ors_routes import _fetch_ors_route, _to2d
+from petitions import _fetch_ors_route, _to2d
 
 from dotenv import load_dotenv
 from consume import moto_consume
@@ -16,6 +16,8 @@ ALLOWED_ORIGINS = [
     o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 ]
 ORS_TOKEN = os.getenv("ORS_TOKEN", "")
+AZURE_TOKEN = os.getenv("AZURE_TOKEN","")
+
 PORT = int(os.getenv("PORT", "8000"))
 
 app = FastAPI(title="Multi rutas ORS")
@@ -53,7 +55,6 @@ class Options(BaseModel):
     # Ciudad del mapa / estaciones
     city: str = "med"   # "med", "bog" o "amva"
 
-    # 🚦 Nuevo: tráfico ON/OFF (para Azure)
     traffic: bool = False
 
 class RoutesRequest(BaseModel):
@@ -104,17 +105,14 @@ async def estaciones(city: str = "amva"):
 async def routes(body: RoutesRequest):
     idx = 1
 
-    if not ORS_TOKEN:
-        raise HTTPException(
-            status_code=500, detail="ORS_TOKEN no configurado en .env"
-        )
-
     city = body.options.city or "med"
-    traffic = body.options.traffic  # 👈 ya disponible
+    traffic = body.options.traffic  
 
-    # Tu compañero lo usará para Azure.
-    # print("TRAFFIC = ", traffic)
-
+    if not ORS_TOKEN and not AZURE_TOKEN:
+        raise HTTPException(
+            status_code=500, detail="Tokens no configurads"
+        )
+    
     out: List[Dict[str, Any]] = []
     async with httpx.AsyncClient(timeout=30) as client:
         for v in body.vehicles:
@@ -124,34 +122,19 @@ async def routes(body: RoutesRequest):
             if len(coords) < 2:
                 continue
             try:
-                r = await _fetch_ors_route(
-                    client=client,
-                    token=ORS_TOKEN,
-                    profile_key=body.options.profile,
-                    coords=coords,
-                    steps=body.options.steps,
-                    geometries=body.options.geometries,
-                    exclude=body.options.exclude,
-                    want_alternatives=body.options.alternatives,
-                    alt_count=body.options.alt_count,
-                    alt_share=body.options.alt_share,
-                    alt_weight=body.options.alt_weight,
-                )
-
                 estaciones = get_estaciones(city)
 
                 data = await moto_consume(
-                    rutas=r,
+                    coords=coords,
                     estaciones=estaciones,
                     nombre=f"moto-{idx}",
                     client=client,
-                    token=ORS_TOKEN,
+                    ors_token=ORS_TOKEN,
+                    azure_token=AZURE_TOKEN,
                     profile=body.options.profile,
                     city=city,
+                    traffic=traffic
                 )
-
-                # 👇 Aquí tu compañero podrá insertar algo como:
-                # data["traffic_used"] = traffic
 
             except httpx.RequestError as e:
                 raise HTTPException(
