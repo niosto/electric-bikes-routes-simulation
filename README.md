@@ -289,8 +289,8 @@ Versión alternativa que recibe rutas completas en formato GeoJSON.
 
 **Investigadores principales:**
 - Juan Pablo González   
-- Nicolás Ospina  
-- Alejandro Garcés   
+- Nicolás Ospina Torres  
+- Alejandro Garcés Ramírez   
 
 ---
 
