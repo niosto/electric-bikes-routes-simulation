@@ -1,1 +1,10 @@
-export const COLORS = ["#1f77b4","#ff7f0e","#2ca02c","#d62728","#9467bd","#8c564b","#e377c2","#7f7f7f","#bcbd22","#7bd3f5ff"];
+export const COLORS = [
+  "#ef4444", // rojo
+  "#3b82f6", // azul
+  "#10b981", // verde
+  "#f59e0b", // ámbar
+  "#8b5cf6", // púrpura
+  "#ec4899", // rosa
+  "#14b8a6", // teal
+  "#f97316", // naranja
+]

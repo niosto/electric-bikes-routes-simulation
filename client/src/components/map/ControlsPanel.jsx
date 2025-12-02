@@ -1,13 +1,19 @@
-import React from "react";
-import FileLoader from "./FileLoader.jsx";
-import { buildVehiclesJSON, buildRoutesFeatureCollection } from "../../utils/exporters.js";
+"use client"
+import FileLoader from "./FileLoader.jsx"
+import { buildVehiclesJSON, buildRoutesFeatureCollection } from "../../utils/exporters.js"
 
 export default function ControlsPanel({
-  options, setOptions,
-  vehicles, activeVehicle, setActiveVehicle,
-  addVehicle, removeVehicle,
-  undoWaypoint, clearAll,
-  totalSummary, computeRoutesManual,
+  options,
+  setOptions,
+  vehicles,
+  activeVehicle,
+  setActiveVehicle,
+  addVehicle,
+  removeVehicle,
+  undoWaypoint,
+  clearAll,
+  totalSummary,
+  computeRoutesManual,
   setVehicles,
   // pueden no venir aún; damos valores por defecto seguros
   onGeoLoad = () => {},
@@ -21,34 +27,34 @@ export default function ControlsPanel({
     const payload = buildVehiclesJSON(vehicles, {
       ...options,
       alternatives: false, // forzado
-      steps: false,        // forzado
-    });
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "vehicles_request.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+      steps: false, // forzado
+    })
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "vehicles_request.json"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   // Exporta el GeoJSON de las rutas calculadas (si existen)
   const exportRoutesGeoJSON = () => {
-    const fc = buildRoutesFeatureCollection(routes, selectedAlt);
-    const blob = new Blob([JSON.stringify(fc, null, 2)], { type: "application/geo+json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "routes.geojson";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+    const fc = buildRoutesFeatureCollection(routes, selectedAlt)
+    const blob = new Blob([JSON.stringify(fc, null, 2)], { type: "application/geo+json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "routes.geojson"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   // Calcular siempre 1 ruta sin pasos
   const handleCompute = () => {
-    setOptions((o) => ({ ...o, alternatives: false, steps: false }));
-    computeRoutesManual();
-  };
+    setOptions((o) => ({ ...o, alternatives: false, steps: false }))
+    computeRoutesManual()
+  }
 
   return (
     <div className="card">
@@ -84,7 +90,7 @@ export default function ControlsPanel({
         <select
           className="select"
           value={activeVehicle}
-          onChange={(e) => setActiveVehicle(parseInt(e.target.value, 10))}
+          onChange={(e) => setActiveVehicle(Number.parseInt(e.target.value, 10))}
           disabled={drawOnly}
         >
           {vehicles.map((v, i) => (
@@ -123,14 +129,10 @@ export default function ControlsPanel({
           Exportar JSON (entrada)
         </button>
 
-        <button
-          className="btn ghost"
-          onClick={exportRoutesGeoJSON}
-          disabled={Object.keys(routes || {}).length === 0}
-        >
+        <button className="btn ghost" onClick={exportRoutesGeoJSON} disabled={Object.keys(routes || {}).length === 0}>
           Exportar GeoJSON (rutas)
         </button>
       </div>
     </div>
-  );
+  )
 }

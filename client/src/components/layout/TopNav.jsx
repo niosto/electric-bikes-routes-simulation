@@ -1,50 +1,42 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
-
-/**
- * TopNav con pestañas táctiles.
- *
- * props:
- *  - brand:      contenido opcional a la izquierda (logo, texto, etc.)
- *  - tabs:       [{ key: "home", label: "Home" }, ...]
- *  - activeKey:  clave activa (para resaltar por ruta, opcional)
- */
-const routeByKey = {
-  home: "/home",
-  docs: "/docs",
-  map: "/mapa",
-  telemetry: "/telemetry",
-};
+"use client"
+import { NavLink, useNavigate } from "react-router-dom"
+import { User } from "lucide-react"
 
 export default function TopNav({ brand, tabs = [], activeKey }) {
+  const navigate = useNavigate()
+
+  const routeByKey = {
+    home: "/home",
+    docs: "/docs",
+    map: "/mapa",
+    telemetry: "/telemetry",
+  }
+
   return (
-    <header className="topnav">
-      {/* Brand opcional (por ahora tú lo pasas como null) */}
-      {brand && (
-        <div style={{ marginRight: 16, fontWeight: 600 }}>
-          {brand}
+    <header className="topnav-black">
+      {/* Logo y brand */}
+      <div className="topnav-brand">
+        <div className="logo-text">
+          <div className="logo-university">UNIVERSIDAD</div>
+          <div className="logo-name">EAFIT</div>
         </div>
-      )}
+      </div>
 
-      <nav className="tabs">
+      {/* Navegación centrada */}
+      <nav className="topnav-nav">
         {tabs.map((tab) => {
-          const path = routeByKey[tab.key] || "/home";
-
+          const path = routeByKey[tab.key] || "/home"
           return (
-            <NavLink
-              key={tab.key}
-              to={path}
-              // NavLink ya genera <a>, y usamos la clase "active" para tu CSS
-              className={({ isActive }) =>
-                (isActive || activeKey === tab.key) ? "active" : ""
-              }
-              style={{ textDecoration: "none" }}
-            >
+            <NavLink key={tab.key} to={path} className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
               {tab.label}
             </NavLink>
-          );
+          )
         })}
       </nav>
+
+      <button className="user-icon" onClick={() => navigate("/home")} title="Perfil">
+        <User size={20} color="white" />
+      </button>
     </header>
-  );
+  )
 }
