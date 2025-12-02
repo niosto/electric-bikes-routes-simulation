@@ -85,6 +85,11 @@ def health():
     return {"ok": True, "provider": "ors", "has_token": bool(ORS_TOKEN)}
 
 
+@app.get("/telemetria")
+def health():
+    with open("resources/data/telemetry/telemetry_example.json","r") as f:
+        return json.load(f)
+
 # =================== ESTACIONES ===================
 @app.get("/estaciones")
 async def estaciones(city: str = "amva"):
