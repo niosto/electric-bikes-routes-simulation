@@ -10,7 +10,7 @@ class Moto:
         self.capacidad_bateria = 2.5
         self.estado_bateria = self.capacidad_bateria
         self.en_carga = False
-        self.umbral_energia = self.capacidad_bateria * 0.95
+        self.umbral_energia = self.capacidad_bateria * 0.90
         self.energia_antes_de_recarga = None
         self.idx = 0
         self.idx_ruta = 0
