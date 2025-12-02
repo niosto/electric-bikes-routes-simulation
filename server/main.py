@@ -136,6 +136,9 @@ async def routes(body: RoutesRequest):
                     traffic=traffic
                 )
 
+                with open(f"resources/examples/ej_out.json", "w") as f:
+                    json.dump(data,f,indent=2)
+
             except httpx.RequestError as e:
                 raise HTTPException(
                     status_code=502, detail=f"Error de red ORS: {e!s}"
@@ -143,10 +146,6 @@ async def routes(body: RoutesRequest):
 
             idx += 1
             out.append({"vehicle_id": v.vehicle_id, **data})
-
-    # Debug opcional
-    with open("resources/ej_out.json", "w") as f:
-        json.dump({"routes": out}, f, indent=2)
 
     return {"routes": out}
 

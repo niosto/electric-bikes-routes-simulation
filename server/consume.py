@@ -1,64 +1,7 @@
 from moto import Moto
-from utils import get_vel, get_vel_azure
-from petitions import _fetch_ors_route, _to2d, _fetch_azure_route, _fecth_alt
+from utils import manage_segments
+from petitions import _fetch_ors_route, _fetch_azure_route, _fecth_alt
 import numpy as np
-
-def preprocesar_vectores(velocidades, pendientes, tiempos, coordenadas, puntos_intermedios=10):
-    n_original = len(velocidades)
-    if(n_original < 2):
-        return velocidades, pendientes, tiempos, coordenadas
-    n_nuevo = n_original + (n_original - 1) * puntos_intermedios
-    
-    x_original = np.arange(n_original)
-    x_nuevo = np.linspace(0, n_original - 1, n_nuevo)
-    
-    velocidades_interp = np.interp(x_nuevo, x_original, velocidades).tolist()
-    pendientes_interp = np.interp(x_nuevo, x_original, pendientes).tolist()
-    tiempos_interp = np.interp(x_nuevo, x_original, tiempos).tolist()
-    
-    coords_interp = []
-    for i in range(3):
-        valores = [coord[i] for coord in coordenadas]
-        valores_interp = np.interp(x_nuevo, x_original, valores)
-        coords_interp.append(valores_interp.tolist())
-    
-    coordenadas_interp = [[coords_interp[0][i], coords_interp[1][i], coords_interp[2][i]] for i in range(n_nuevo)]
-    
-    return velocidades_interp, pendientes_interp, tiempos_interp, coordenadas_interp
-
-def manage_segments(rutas, traffic, elevation=None):
-    rutas_moto = []
-
-    if traffic:
-        rutas = rutas["features"]
-
-        data = get_vel_azure(rutas, elevation)
-        data["distance"] = rutas[-1]["properties"]["distanceInMeters"]
-        data["duration"] = rutas[-1]["properties"]["durationInSeconds"]
-
-        vel_interp, pend_interp, time_interp, coords_interp = preprocesar_vectores(
-                data["speeds"], data["slopes"], data["times"], data["coords"], puntos_intermedios=2)
-        data["speeds"] = vel_interp
-        data["slopes"] = pend_interp
-        data["times"] = time_interp
-        data["coords"] = coords_interp
-
-        rutas_moto = data
-    else:
-        for segment in rutas["properties"]["segments"]:
-            data = get_vel(segment["steps"], rutas["geometry"]["coordinates"])
-
-            data["duration"] = segment["duration"]
-            data["distance"] = segment["distance"]
-            vel_interp, pend_interp, time_interp, coords_interp = preprocesar_vectores(
-                data["speeds"], data["slopes"], data["times"], data["coords"], puntos_intermedios=2)
-
-            data["speeds"] = vel_interp
-            data["slopes"] = pend_interp
-            data["times"] = time_interp
-            data["coords"] = coords_interp
-            rutas_moto.append(data)
-    return rutas_moto
 
 async def route(coords, traffic, ors_token, azure_token, client):
     rutas_moto = []
@@ -134,6 +77,8 @@ async def moto_consume(coords, estaciones, nombre, client, ors_token, azure_toke
 
             moto.change_route(nueva_ruta)
 
+
+
         step_result = moto.avanzar_paso()
         
     speeds = []
@@ -150,6 +95,14 @@ async def moto_consume(coords, estaciones, nombre, client, ors_token, azure_toke
             "soc": moto.soc_history,
             "speeds": speeds,
             "map_city": city,
+            'consumo_electrico_kwh': 0,
+            'consumo_combustion_kwh': 0,
+            'consumo_galones': 0,
+            'distancia_km': 0,
+            'emisiones_electrico_kg': 0,
+            'emisiones_combustion_kg': 0,
+            'factor_emision_electrico': 0,
+            'factor_emision_combustion': 0
         },
         "summary":{
             "distance":moto.distance,

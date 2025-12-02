@@ -1,94 +1,116 @@
-import requests
-import polyline
+import numpy as np
 import math
 from openrouteservice import convert
 from geopy.distance import geodesic
 
-# lon, lat format
-def get_route(coords,api_key):
-    url = "https://api.openrouteservice.org/v2/directions/driving-car"
-    headers = {
-        "Authorization": api_key,
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "coordinates": coords,
-        "instructions": True,
-        "elevation":True
-    }
-
-    response = requests.post(url, json=payload, headers=headers)
-    if response.status_code != 200:
-        raise Exception(f"Error elevación: {response.text}")
+def preprocesar_vectores(velocidades, pendientes, tiempos, coordenadas, puntos_intermedios=10):
+    n_original = len(velocidades)
+    if(n_original < 2):
+        return velocidades, pendientes, tiempos, coordenadas
+    n_nuevo = n_original + (n_original - 1) * puntos_intermedios
     
-    data = response.json()
-    return data
+    x_original = np.arange(n_original)
+    x_nuevo = np.linspace(0, n_original - 1, n_nuevo)
+    
+    velocidades_interp = np.interp(x_nuevo, x_original, velocidades).tolist()
+    pendientes_interp = np.interp(x_nuevo, x_original, pendientes).tolist()
+    tiempos_interp = np.interp(x_nuevo, x_original, tiempos).tolist()
+    
+    coords_interp = []
+    for i in range(3):
+        valores = [coord[i] for coord in coordenadas]
+        valores_interp = np.interp(x_nuevo, x_original, valores)
+        coords_interp.append(valores_interp.tolist())
+    
+    coordenadas_interp = [[coords_interp[0][i], coords_interp[1][i], coords_interp[2][i]] for i in range(n_nuevo)]
+    
+    return velocidades_interp, pendientes_interp, tiempos_interp, coordenadas_interp
 
+def manage_segments(rutas, traffic, elevation=None):
+    rutas_moto = []
 
-def get_alt(coordinates, api_key):
-    url = "https://api.openrouteservice.org/elevation/line"
-    headers = {
-        "Authorization": api_key,
-        "Content-Type": "application/json"
+    if traffic:
+        rutas = rutas["features"]
+
+        data = get_vel_azure(rutas, elevation)
+        data["distance"] = rutas[-1]["properties"]["distanceInMeters"]
+        data["duration"] = rutas[-1]["properties"]["durationInSeconds"]
+
+        vel_interp, pend_interp, time_interp, coords_interp = preprocesar_vectores(
+                data["speeds"], data["slopes"], data["times"], data["coords"], puntos_intermedios=2)
+        data["speeds"] = vel_interp
+        data["slopes"] = pend_interp
+        data["times"] = time_interp
+        data["coords"] = coords_interp
+
+        rutas_moto = data
+    else:
+        for segment in rutas["properties"]["segments"]:
+            data = get_vel(segment["steps"], rutas["geometry"]["coordinates"])
+
+            data["duration"] = segment["duration"]
+            data["distance"] = segment["distance"]
+            vel_interp, pend_interp, time_interp, coords_interp = preprocesar_vectores(
+                data["speeds"], data["slopes"], data["times"], data["coords"], puntos_intermedios=2)
+
+            data["speeds"] = vel_interp
+            data["slopes"] = pend_interp
+            data["times"] = time_interp
+            data["coords"] = coords_interp
+            rutas_moto.append(data)
+    return rutas_moto
+
+def calcular_consumo_y_emisiones(potencia_electrica_w, potencia_combustion_kw, tiempos, speeds):
+    """
+    Calcula el consumo total y las emisiones equivalentes de ciclo de vida
+    """
+    # Calcular consumo eléctrico total (kWh)
+    consumo_electrico_total = 0
+    consumo_combustion_total = 0
+    
+    for i in range(len(potencia_electrica_w)):
+        if i == 0:
+            delta_t = tiempos[0] if tiempos[0] > 0 else 1.0
+        else:
+            delta_t = max(tiempos[i] - tiempos[i-1], 0.1)
+        
+        tiempo_horas = delta_t / 3600
+        consumo_electrico_total += (potencia_electrica_w[i] / 1000) * tiempo_horas
+        consumo_combustion_total += potencia_combustion_kw[i] * tiempo_horas
+    
+    # Calcular distancia total (km)
+    distancia_total = 0
+    for i in range(len(speeds)):
+        if i == 0:
+            delta_t = tiempos[0] if tiempos[0] > 0 else 1.0
+        else:
+            delta_t = max(tiempos[i] - tiempos[i-1], 0.1)
+        vel_ms = speeds[i] / 3.6
+        distancia_total += vel_ms * delta_t
+    distancia_km = distancia_total / 1000
+    
+    # Factores de emisión equivalentes de ciclo de vida (gCO₂/km)
+    factor_emision_electrico_gco2_km = 35  # Motocicleta eléctrica
+    factor_emision_combustion_gco2_km = 70  # Motocicleta a combustión
+    
+    # Emisiones equivalentes de ciclo de vida (kg CO₂)
+    emisiones_electrico_kg = (factor_emision_electrico_gco2_km * distancia_km) / 1000
+    emisiones_combustion_kg = (factor_emision_combustion_gco2_km * distancia_km) / 1000
+    
+    # Conversión de energía de combustible a galones
+    poder_calorifico_gasolina_kwh_galon = 33.7
+    consumo_galones = consumo_combustion_total / poder_calorifico_gasolina_kwh_galon
+
+    return {
+        'consumo_electrico_kwh': consumo_electrico_total,
+        'consumo_combustion_kwh': consumo_combustion_total,
+        'consumo_galones': consumo_galones,
+        'distancia_km': distancia_km,
+        'emisiones_electrico_kg': emisiones_electrico_kg,
+        'emisiones_combustion_kg': emisiones_combustion_kg,
+        'factor_emision_electrico': factor_emision_electrico_gco2_km,
+        'factor_emision_combustion': factor_emision_combustion_gco2_km
     }
-
-    # ORS espera formato lat, lon para ENCODED_POLYLINE
-    geometry_latlng = [(lat, lng) for lng, lat in coordinates]
-
-    payload = {
-        "format_in": "encodedpolyline",
-        "format_out": "geojson",
-        "geometry": polyline.encode(geometry_latlng)
-    }
-
-    response = requests.post(url, headers=headers, json=payload)
-    if response.status_code != 200:
-        raise Exception(f"Error elevación: {response.text}")
-    data = response.json()
-    return data['geometry']['coordinates']
-
-# lon lat
-def get_opt_route(coords,time,api_key):
-    features = []
-    for idx, (lon, lat) in enumerate(coords):
-        point_type = "waypoint" if idx in (0, len(coords) - 1) else "viaWaypoint"
-        features.append({
-            "type": "Feature",
-            "geometry": {
-                "coordinates": [lon, lat],
-                "type": "Point"
-            },
-            "properties": {
-                "pointIndex": idx,
-                "pointType": point_type
-            }
-        })
-    date = "2025-10-30T" + time + "-05:00" 
-
-    body = {
-        "type": "FeatureCollection",
-        "features": features,
-        "optimizeRoute": "fastestWithTraffic",
-        "routeOutputOptions": ["itinerary","routePath"],
-        "maxRouteCount": 1,
-        "travelMode": "driving",
-        "departAt": date
-    }
-
-    url = "https://atlas.microsoft.com/route/directions"
-    params = {"api-version": "2025-01-01"}
-
-    response = requests.post(
-        url,
-        params=params,
-        headers={
-            "Content-Type": "application/json; charset=UTF-8",
-            "subscription-key": api_key
-        },
-        json=body
-    )
-    response.raise_for_status()
-    return response.json()
 
 # Unidades de metros y segundos 
 def get_vel_azure(features,elevation_data):
@@ -224,30 +246,3 @@ def get_vel(steps, elevation_data):
                 route["times"].append(round(total_time, 2))
 
     return route
-
-def route(coords, traffic=False, ORS_API_KEY=None, AZURE_API_KEY=None):
-    # Validar llaves API
-    if ORS_API_KEY == None and not traffic:
-        raise Exception(f"Llave ORS invlida")
-    if AZURE_API_KEY == None and AZURE_API_KEY == None:
-        raise Exception(f"Llaves API invalidas")
-
-    route_info = {}
-    if traffic:
-        data_opt = get_opt_route(coords,"08:00:00",AZURE_API_KEY)
-        data_opt = data_opt["features"]
-
-        line_coords = data_opt[-1]["geometry"]["coordinates"][0]
-        elevation = get_alt(line_coords,ORS_API_KEY)
-                
-        route_info = get_vel_azure(data_opt,elevation)
-    else:
-        # Get route with ORS
-        data = get_route(coords, ORS_API_KEY)
-        route_line = data["routes"][0]["geometry"]
-        route_data = convert.decode_polyline(route_line, True)["coordinates"]
-
-        steps = data["routes"][0]["segments"][0]["steps"]
-        route_info = get_vel(steps, route_data)
-
-    return route_info

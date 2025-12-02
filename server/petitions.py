@@ -111,7 +111,6 @@ async def _fecth_alt(
     data = response.json()
     return data['geometry']['coordinates']
 
-
 async def _fetch_azure_route(
     client: httpx.AsyncClient,
     token: str,
