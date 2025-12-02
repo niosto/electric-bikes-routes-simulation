@@ -24,11 +24,9 @@ export default function StatsPanel({
 
   // === 2. Resumen numérico (usa summary de la ruta + totalSummary) ===
   const { distanceKm, durationMin } = useMemo(() => {
-    // summary del backend (m y s)
     const distanceMeters = activeRoute?.summary?.distance ?? null;
     const durationSeconds = activeRoute?.summary?.duration ?? null;
 
-    // totalSummary (panel izquierdo)
     const tsDist =
       typeof totalSummary?.distance_km === "string"
         ? parseFloat(totalSummary.distance_km)
@@ -38,7 +36,6 @@ export default function StatsPanel({
         ? parseFloat(totalSummary.duration_min)
         : totalSummary?.duration_min;
 
-    // Prioridad: totalSummary > summary de la ruta
     const dKm =
       Number.isFinite(tsDist) && tsDist > 0
         ? tsDist
@@ -56,31 +53,25 @@ export default function StatsPanel({
     return { distanceKm: dKm, durationMin: dMin };
   }, [activeRoute, totalSummary]);
 
-  
   // === 3. Datos para gráficas (potencia & SoC) ===
-    const powerSocData = useMemo(() => {
+  const powerSocData = useMemo(() => {
     const pot = activeRoute?.properties?.potencia;
     const soc = activeRoute?.properties?.soc;
-    const speeds = activeRoute?.properties?.speeds; // <-- nuevo
-
     if (!Array.isArray(pot) || !Array.isArray(soc)) return [];
 
     return pot.map((p, idx) => ({
       idx,
       power: p,
       soc: soc[idx] ?? null,
-      speed: Array.isArray(speeds) ? speeds[idx] ?? null : null, // <-- nuevo
     }));
   }, [activeRoute]);
 
-  
   const avgPower = useMemo(() => {
     if (!powerSocData.length) return null;
     const sum = powerSocData.reduce((acc, d) => acc + d.power, 0);
     return sum / powerSocData.length;
   }, [powerSocData]);
-  
-  
+
   // === 4. "Energía acumulada" como índice (suma de potencia) ===
   const cumulativeEnergyData = useMemo(() => {
     if (!powerSocData.length) return [];
@@ -90,17 +81,17 @@ export default function StatsPanel({
       return { idx: d.idx, energyIndex: cum };
     });
   }, [powerSocData]);
-  
+
   const emisiones_co2_kg = useMemo(() => {
     let factor_emision_gco2_km = 70;
     if (!Number.isFinite(distanceKm)) return null;
-    return (distanceKm * factor_emision_gco2_km) / 1000; // kg CO2
+    return (distanceKm * factor_emision_gco2_km) / 1000;
   }, [distanceKm]);
 
   const emisiones_co2_equivalente_electrico_kg = useMemo(() => {
     let factor_emision_electrico_gco2_km = 35;
     if (!Number.isFinite(distanceKm)) return null;
-    return (distanceKm * factor_emision_electrico_gco2_km) / 1000; // kg CO2
+    return (distanceKm * factor_emision_electrico_gco2_km) / 1000;
   }, [distanceKm]);
 
   const emisiones_co2_equivalente_kg = useMemo(() => {
@@ -108,9 +99,11 @@ export default function StatsPanel({
     if (!Number.isFinite(distanceKm)) return null;
     let c = cumulativeEnergyData[cumulativeEnergyData.length - 1];
     let poder_calorifico_gasolina_kwh_galon = 33.7;
-    const consumo_galones = c.energyIndex / poder_calorifico_gasolina_kwh_galon;
-    return consumo_galones * factor_emision_co2_kg_galon; // kg CO2
-  }, [distanceKm]);
+    const consumo_galones = c?.energyIndex
+      ? c.energyIndex / poder_calorifico_gasolina_kwh_galon
+      : 0;
+    return consumo_galones * factor_emision_co2_kg_galon;
+  }, [distanceKm, cumulativeEnergyData]);
 
   // === 5. Comparación entre vehículos (multi-moto) ===
   const comparisonData = useMemo(() => {
@@ -141,10 +134,10 @@ export default function StatsPanel({
     if (Number.isFinite(durationMin))
       rows.push(`# Duración (min): ${durationMin.toFixed(2)}`);
     rows.push("");
-    rows.push("segmento,potencia,soc,velocidad_kmh");
+    rows.push("segmento,potencia,soc");
 
     powerSocData.forEach((d) => {
-      rows.push(`${d.idx},${d.power},${d.soc ?? ""},${d.speed ?? ""}`);
+      rows.push(`${d.idx},${d.power},${d.soc ?? ""}`);
     });
 
     const blob = new Blob([rows.join("\n")], {
@@ -161,10 +154,47 @@ export default function StatsPanel({
     URL.revokeObjectURL(url);
   };
 
-  // === 7. Exportar "PDF" usando la impresión del navegador ===
   const handleExportPdf = () => {
     window.print();
   };
+
+  // === 7. NUEVO: datos de puntos de carga ===
+  const chargePoints = Array.isArray(activeRoute?.charge_points)
+    ? activeRoute.charge_points
+    : [];
+
+  const chargeSummary = useMemo(() => {
+    if (!chargePoints.length)
+      return { totalEnergyKwh: 0, totalTimeMin: 0, count: 0 };
+
+    let totalEnergy = 0;
+    let totalTimeMin = 0;
+
+    chargePoints.forEach((cp) => {
+      if (typeof cp.energy_charged === "number")
+        totalEnergy += cp.energy_charged;
+      if (typeof cp.charge_time_min === "number")
+        totalTimeMin += cp.charge_time_min;
+    });
+
+    return {
+      totalEnergyKwh: totalEnergy,
+      totalTimeMin,
+      count: chargePoints.length,
+    };
+  }, [chargePoints]);
+
+  const chargeChartData = useMemo(() => {
+    if (!chargePoints.length) return [];
+    return chargePoints.map((cp, idx) => ({
+      idx: idx + 1,
+      energy_kwh:
+        typeof cp.energy_charged === "number" ? cp.energy_charged : null,
+      time_min:
+        typeof cp.charge_time_min === "number" ? cp.charge_time_min : null,
+      station_name: cp.station_name || `Punto ${idx + 1}`,
+    }));
+  }, [chargePoints]);
 
   return (
     <>
@@ -223,17 +253,24 @@ export default function StatsPanel({
               </li>
               {Number.isFinite(emisiones_co2_kg) && (
                 <li>
-                  <strong>Emisiones de CO₂:</strong> {emisiones_co2_kg.toFixed(1)} gr
+                  <strong>Emisiones de CO₂:</strong>{" "}
+                  {emisiones_co2_kg.toFixed(1)} kg
                 </li>
               )}
               {Number.isFinite(emisiones_co2_equivalente_kg) && (
                 <li>
-                  <strong>Emisiones(desde galones):</strong> {emisiones_co2_equivalente_kg.toFixed(1)} gr
+                  <strong>Emisiones (desde galones):</strong>{" "}
+                  {emisiones_co2_equivalente_kg.toFixed(1)} kg
                 </li>
               )}
-              {Number.isFinite(emisiones_co2_equivalente_electrico_kg) && (
+              {Number.isFinite(
+                emisiones_co2_equivalente_electrico_kg
+              ) && (
                 <li>
-                  <strong>Emisiones equivalentes (motocicleta eléctrica):</strong> {emisiones_co2_equivalente_electrico_kg} gr                </li>
+                  <strong>Emisiones equivalentes (motocicleta
+                    eléctrica):</strong>{" "}
+                  {emisiones_co2_equivalente_electrico_kg.toFixed(1)} kg
+                </li>
               )}
             </ul>
           ) : (
@@ -419,48 +456,79 @@ export default function StatsPanel({
             </p>
           )}
         </div>
-                {/* ===== Tarjeta 6: Velocidad por segmento ===== */}
+
+        {/* ===== Tarjeta 6: NUEVO - Puntos de carga ===== */}
         <div className="stats-card">
-          <h3>Velocidad por segmento</h3>
-          {powerSocData.length ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart
-                data={powerSocData}
-                margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-              >
-                <XAxis
-                  dataKey="idx"
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "Segmento",
-                    position: "insideBottomRight",
-                    offset: -4,
-                  }}
-                />
-                <YAxis
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "Velocidad (km/h)",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="speed"
-                  name="Velocidad (km/h)"
-                  dot={false}
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <h3>Puntos de carga</h3>
+          {!chargePoints.length ? (
+            <p>Esta ruta no realizó recargas de batería.</p>
           ) : (
-            <p>No hay datos de velocidad todavía.</p>
+            <>
+              <ul style={{ marginBottom: "0.75rem" }}>
+                <li>
+                  <strong>Número de recargas:</strong>{" "}
+                  {chargeSummary.count}
+                </li>
+                <li>
+                  <strong>Energía total recargada:</strong>{" "}
+                  {chargeSummary.totalEnergyKwh.toFixed(2)} kWh
+                </li>
+                <li>
+                  <strong>Tiempo total en carga:</strong>{" "}
+                  {chargeSummary.totalTimeMin.toFixed(1)} min
+                </li>
+              </ul>
+
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart
+                  data={chargeChartData}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+                >
+                  <XAxis
+                    dataKey="idx"
+                    tick={{ fontSize: 10 }}
+                    label={{
+                      value: "Punto de carga",
+                      position: "insideBottomRight",
+                      offset: -4,
+                    }}
+                  />
+                  <YAxis
+                    yAxisId="left"
+                    tick={{ fontSize: 10 }}
+                    label={{
+                      value: "Energía (kWh)",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    tick={{ fontSize: 10 }}
+                    label={{
+                      value: "Tiempo (min)",
+                      angle: 90,
+                      position: "insideRight",
+                    }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Bar
+                    yAxisId="left"
+                    dataKey="energy_kwh"
+                    name="Energía recargada (kWh)"
+                  />
+                  <Bar
+                    yAxisId="right"
+                    dataKey="time_min"
+                    name="Tiempo de carga (min)"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </>
           )}
         </div>
-
       </div>
     </>
   );

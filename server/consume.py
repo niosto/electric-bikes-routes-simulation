@@ -59,16 +59,14 @@ async def moto_consume(coords, estaciones, nombre, client, ors_token, azure_toke
             current_pos = moto.route_data[moto.idx]["coords"][moto.idx_ruta][:2]
 
             idx_est = moto.nearest_station(current_pos)
-
             station_coord = estaciones["coords"][idx_est]
-            
             destiny = moto.route_data[moto.idx]["coords"][-1][:2]
 
             moto.add_charge_point(idx_est, current_pos)
 
-            # Fetch route to station
+            # Fetch route to station + destino
             nueva_ruta = await route(
-                coords=[current_pos,station_coord,destiny],
+                coords=[current_pos, station_coord, destiny],
                 traffic=traffic,
                 ors_token=ors_token,
                 azure_token=azure_token,
@@ -86,28 +84,24 @@ async def moto_consume(coords, estaciones, nombre, client, ors_token, azure_toke
         speeds.extend(ruta["speeds"])
 
     return {
-        "geometry":{
-            "coordinates": [[lon, lat] for lon,lat,_ in moto.positions],
-            "type":"LineString"
+        "geometry": {
+            "coordinates": [[lon, lat] for lon, lat, _ in moto.positions],
+            "type": "LineString"
         },
         "properties": {
             "potencia": moto.power,
             "soc": moto.soc_history,
             "speeds": speeds,
             "map_city": city,
-            'consumo_electrico_kwh': 0,
-            'consumo_combustion_kwh': 0,
-            'consumo_galones': 0,
-            'distancia_km': 0,
-            'emisiones_electrico_kg': 0,
-            'emisiones_combustion_kg': 0,
-            'factor_emision_electrico': 0,
-            'factor_emision_combustion': 0
+            # NUEVO: consumos totales de la moto
+            "total_electric_kwh": moto.total_electric_kwh,
+            "total_combustion_kwh": moto.total_combustion_kwh,
         },
-        "summary":{
-            "distance":moto.distance,
-            "duration":moto.duration
+        "summary": {
+            "distance": moto.distance,
+            "duration": moto.duration
         },
-        "alternatives":[],
+        "alternatives": [],
+        # Cada punto ahora tiene energy_charged, charge_time_min, etc.
         "charge_points": moto.puntos_recarga_realizados
     }
