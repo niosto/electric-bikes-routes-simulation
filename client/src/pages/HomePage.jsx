@@ -285,7 +285,7 @@ export default function HomePage() {
       <div className="home-container">
         {/* Hero Search */}
         <div className="hero-search">
-          <input type="text" placeholder="¿Qué necesitas?" />
+          <span className="hero-text">¿Qué hace esta plataforma?</span>
           <div className="logo-img">BID-EAFIT</div>
         </div>
 

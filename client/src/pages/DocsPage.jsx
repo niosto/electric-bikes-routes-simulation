@@ -321,15 +321,15 @@ export default function DocsPage() {
           <main className="docs-content">
             {activeSection === "introduccion" && (
               <>
-                <h1>Documentación - Simulador de Bicicletas Eléctricas</h1>
+                <h1>Documentación - Simulador de motocicletas Eléctricas</h1>
                 <p>
-                  Bienvenido a la documentación completa del simulador de rutas para bicicletas eléctricas. Esta guía te
+                  Bienvenido a la documentación completa del simulador de rutas para motocicletas eléctricas. Esta guía te
                   ayudará a entender la estructura del proyecto, los endpoints disponibles, y cómo integrar el API en tu
                   aplicación.
                 </p>
                 <p>
                   El simulador permite a los usuarios crear rutas, calcular consumo de energía, estimar tiempos de viaje
-                  y analizar el desempeño de diferentes modelos de bicicletas eléctricas.
+                  y analizar el desempeño de diferentes modelos de motocicletas eléctricas.
                 </p>
               </>
             )}
