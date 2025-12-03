@@ -599,4 +599,113 @@ button {
   object-fit: contain;
 }
 
+/* === Telemetry sidebar look & feel === */
 
+.telemetry-card {
+  padding: 16px 18px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.telemetry-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.telemetry-title-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.telemetry-icon-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.telemetry-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #6b7280;
+  max-width: 210px;
+}
+
+.telemetry-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.telemetry-file-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.telemetry-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.telemetry-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.telemetry-metric-card {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.telemetry-metric-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.telemetry-metric-value {
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.telemetry-downsample {
+  margin-top: 4px;
+}
+
+.telemetry-downsample-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: #374151;
+}
+
+.telemetry-downsample-value {
+  font-variant-numeric: tabular-nums;
+  color: #6b7280;
+}
+
+.telemetry-hint {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin-top: 6px;
+}

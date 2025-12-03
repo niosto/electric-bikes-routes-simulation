@@ -93,6 +93,8 @@ export default function TelemetryPage() {
   const [geojson, setGeojson] = useState(null);
   const [telemetryRows, setTelemetryRows] = useState([]);
   const [downsample, setDownsample] = useState(1);
+  const [chargeSummary, setChargeSummary] = useState(null);
+  const [chargePoints, setChargePoints] = useState([]);
   const inputRef = useRef(null);
 
   function handleFile(e) {
@@ -106,33 +108,91 @@ export default function TelemetryPage() {
         const json = JSON.parse(reader.result);
         let fc = null;
         let rows = null;
+        let summary = null;
+        let points = [];
 
         /* ------------------------------------------
          * 1) GeoJSON válido: FeatureCollection
+         *    (incluye caso exportado desde el mapa
+         *     con properties.telemetry)
          * ------------------------------------------ */
         if (json?.type === "FeatureCollection") {
           fc = json;
 
-        /* ------------------------------------------
-         * 2) Formato ORS “bikes”
-         * ------------------------------------------ */
+          const rowsFromFeatures = [];
+
+          (json.features || []).forEach((feat) => {
+            const props = feat?.properties || {};
+            const telem = props.telemetry;
+            if (Array.isArray(telem)) {
+              telem.forEach((p) => {
+                const lat = Number(p.lat ?? p.latitude);
+                const lng = Number(p.lng ?? p.longitude);
+                const alt = Number(
+                  p.altitude ?? p.alt ?? p.alt_m ?? p.altitude_m ?? NaN,
+                );
+
+                const speed = Number(
+                  p.speed_kmh ?? p.speed ?? p.v_kmh ?? NaN,
+                );
+                const power = Number(
+                  p.power_kW ?? p.power ?? p.pw ?? NaN,
+                );
+                const energy = Number(
+                  p.energy_kWh ?? p.energy ?? NaN,
+                );
+                const soc = Number(p.soc ?? NaN);
+                const tEpoch = Number(
+                  p.t_epoch ??
+                    parseFechaToEpochSeconds(
+                      p.fecha ?? p.timestamp ?? null,
+                    ) ??
+                    NaN,
+                );
+
+                rowsFromFeatures.push({
+                  i: rowsFromFeatures.length,
+                  lat: Number.isFinite(lat) ? lat : null,
+                  lng: Number.isFinite(lng) ? lng : null,
+                  alt: Number.isFinite(alt) ? alt : null,
+                  speed_kmh: Number.isFinite(speed) ? speed : null,
+                  power_kW: Number.isFinite(power) ? power : null,
+                  energy_kWh: Number.isFinite(energy) ? energy : null,
+                  soc: Number.isFinite(soc) ? soc : null,
+                  t_epoch: Number.isFinite(tEpoch) ? tEpoch : null,
+                });
+              });
+            }
+
+            // Datos de carga si están en las propiedades
+            if (!summary && props.chargeSummary) {
+              summary = props.chargeSummary;
+            }
+            if (Array.isArray(props.chargePoints)) {
+              points = points.concat(props.chargePoints);
+            }
+          });
+
+          if (rowsFromFeatures.length) {
+            rows = rowsFromFeatures;
+          }
+
+          setChargeSummary(summary || null);
+          setChargePoints(points);
+
+          /* ------------------------------------------
+           * 2) Formato ORS “bikes”
+           * ------------------------------------------ */
         } else if (json?.bikes) {
           fc = fromBikesToFC(json);
+          rows = [];
+          setChargeSummary(null);
+          setChargePoints([]);
 
-        /* ------------------------------------------
-         * 3) Formato exportado por Mapa (Rutas):
-         *    vehicles_request.json
-         *
-         *    {
-         *      "options": { ... },
-         *      "vehicles": [
-         *        {
-         *          "vehicle_id": "moto-1",
-         *          "waypoints": [ { "coordinates": [lon, lat] }, ... ]
-         *        }
-         *      ]
-         *    }
-         * ------------------------------------------ */
+          /* ------------------------------------------
+           * 3) Formato exportado por Mapa (Rutas):
+           *    vehicles_request.json
+           * ------------------------------------------ */
         } else if (Array.isArray(json?.vehicles)) {
           const features = [];
 
@@ -141,7 +201,6 @@ export default function TelemetryPage() {
 
             const coords = waypoints
               .map((w) => {
-                // Caso principal: coordinates = [lon, lat]
                 if (
                   Array.isArray(w.coordinates) &&
                   w.coordinates.length >= 2
@@ -151,7 +210,6 @@ export default function TelemetryPage() {
                   return [lon, lat];
                 }
 
-                // Fallback por si algún día cambias los nombres
                 const lat =
                   w.latitude ?? w.lat ?? w.latitud ?? w.y ?? null;
                 const lon =
@@ -161,7 +219,7 @@ export default function TelemetryPage() {
               })
               .filter(
                 ([lon, lat]) =>
-                  Number.isFinite(lon) && Number.isFinite(lat)
+                  Number.isFinite(lon) && Number.isFinite(lat),
               );
 
             if (coords.length >= 2) {
@@ -169,7 +227,10 @@ export default function TelemetryPage() {
                 type: "Feature",
                 properties: {
                   vehicle_id:
-                    v.vehicle_id || v.id || v.name || `vehiculo-${idx + 1}`,
+                    v.vehicle_id ||
+                    v.id ||
+                    v.name ||
+                    `vehiculo-${idx + 1}`,
                   source: "map-routes-export",
                 },
                 geometry: {
@@ -182,13 +243,16 @@ export default function TelemetryPage() {
 
           if (features.length) {
             fc = { type: "FeatureCollection", features };
-            rows = []; // no hay telemetría punto a punto → no hay curvas
+            rows = [];
           }
 
-        /* ------------------------------------------
-         * 4) Telemetría real:
-         *    [ { latitude, longitude, altitude, speed, pw, fecha } ]
-         * ------------------------------------------ */
+          setChargeSummary(null);
+          setChargePoints([]);
+
+          /* ------------------------------------------
+           * 4) Telemetría real:
+           *    [ { latitude, longitude, altitude, speed, pw, fecha } ]
+           * ------------------------------------------ */
         } else if (
           Array.isArray(json) &&
           json.length > 1 &&
@@ -221,8 +285,13 @@ export default function TelemetryPage() {
             power_kW: Number.isFinite(Number(p.pw))
               ? Number(p.pw)
               : null,
+            energy_kWh: null,
+            soc: null,
             t_epoch: parseFechaToEpochSeconds(p.fecha),
           }));
+
+          setChargeSummary(null);
+          setChargePoints([]);
         }
 
         /* ------------------------------------------
@@ -230,7 +299,7 @@ export default function TelemetryPage() {
          * ------------------------------------------ */
         if (!fc) {
           alert(
-            "Formato no reconocido.\nUsa: GeoJSON, bikes, vehicles o lista de puntos."
+            "Formato no reconocido.\nUsa: GeoJSON (con telemetría opcional), bikes, vehicles o lista de puntos.",
           );
           return;
         }
@@ -250,6 +319,8 @@ export default function TelemetryPage() {
     setFileName("");
     setGeojson(null);
     setTelemetryRows([]);
+    setChargeSummary(null);
+    setChargePoints([]);
   }
 
   /* ---------- Cálculos/Métricas/datasets ---------- */
@@ -259,7 +330,7 @@ export default function TelemetryPage() {
     totalEnergy_kWh,
     chart_time_power,
     chart_speed,
-    chart_alt,
+    chart_soc,
     chart_energy_vs_dist,
   } = useMemo(() => {
     const coords = geojson?.features?.[0]?.geometry?.coordinates || [];
@@ -277,7 +348,7 @@ export default function TelemetryPage() {
         totalEnergy_kWh: 0,
         chart_time_power: [],
         chart_speed: [],
-        chart_alt: [],
+        chart_soc: [],
         chart_energy_vs_dist: cumDistKm.map((v, i) => ({
           i,
           cum_km: v,
@@ -298,7 +369,7 @@ export default function TelemetryPage() {
 
     const chart_time_power = [];
     const chart_speed = [];
-    const chart_alt = [];
+    const chart_soc = [];
     const chart_energy_vs_dist = [];
 
     const cumSegKm = cumulative(segKm);
@@ -325,9 +396,9 @@ export default function TelemetryPage() {
         t_s: t,
         speed_kmh: Number.isFinite(r.speed_kmh) ? r.speed_kmh : 0,
       });
-      chart_alt.push({
+      chart_soc.push({
         t_s: t,
-        alt_m: Number.isFinite(r.alt) ? r.alt : null,
+        soc: Number.isFinite(r.soc) ? r.soc : null,
       });
 
       const idxDist = Math.min(i, Math.max(0, cumSegKm.length - 1));
@@ -344,7 +415,7 @@ export default function TelemetryPage() {
       totalEnergy_kWh: cum_kWh,
       chart_time_power,
       chart_speed,
-      chart_alt,
+      chart_soc,
       chart_energy_vs_dist,
     };
   }, [geojson, telemetryRows, downsample]);
@@ -357,83 +428,67 @@ export default function TelemetryPage() {
       <div className="page-main">
         {/* Sidebar de telemetría */}
         <aside className="sidebar">
-          <div className="card">
+          <div className="card telemetry-card">
             {/* Header del panel */}
-            <div
-              className="flex items-center justify-between"
-              style={{ marginBottom: 12 }}
-            >
-              <div className="flex items-center gap-2">
-                <Route className="w-5 h-5" />
-                <h2 className="panel-title" style={{ margin: 0 }}>
-                  Telemetría
-                </h2>
+            <div className="telemetry-card-header">
+              <div className="telemetry-title-block">
+                <div className="telemetry-icon-badge">
+                  <Route className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="panel-title" style={{ margin: 0 }}>
+                    Telemetría
+                  </h2>
+                  <p className="telemetry-subtitle">
+                    Carga un archivo JSON con datos de la moto o una ruta
+                    exportada desde el mapa para ver la trayectoria y las
+                    curvas de potencia, velocidad, SoC y energía.
+                  </p>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => inputRef.current?.click()}
-                  className="btn ghost"
-                >
-                  <Upload className="w-4 h-4 mr-1" /> Cargar
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearAll}
-                  disabled={!geojson}
-                  className="btn ghost"
-                >
-                  <Undo2 className="w-4 h-4 mr-1" /> Limpiar
-                </Button>
-              </div>
-              <input
-                ref={inputRef}
-                type="file"
-                accept=".json,.geojson"
-                className="hidden"
-                onChange={handleFile}
-              />
             </div>
 
-            {fileName && (
-              <div
-                className="text-sm"
-                style={{ color: "rgb(107,114,128)", marginBottom: 8 }}
-              >
-                <FileJson className="inline w-4 h-4 mr-1" /> {fileName}
-              </div>
-            )}
+            {/* input oculto */}
+            <input
+              ref={inputRef}
+              type="file"
+              accept=".json,.geojson"
+              className="hidden"
+              onChange={handleFile}
+            />
+
+            {/* Caja de archivo */}
+            <div className="telemetry-file-row">
+              <FileJson className="w-4 h-4" />
+              <span className="telemetry-file-name">
+                {fileName || "Ningún archivo seleccionado"}
+              </span>
+            </div>
 
             {/* Métricas principales */}
-            <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
-              <Card className="rounded-xl shadow-none border">
+            <div className="telemetry-metrics-grid">
+              <Card className="rounded-xl shadow-none border telemetry-metric-card">
                 <CardContent className="p-2">
-                  <div className="text-[11px]" style={{ color: "rgb(107,114,128)" }}>
-                    Distancia
-                  </div>
-                  <div className="text-lg font-semibold">
+                  <div className="telemetry-metric-label">Distancia</div>
+                  <div className="telemetry-metric-value">
                     {(totalKm ?? 0).toFixed(2)} km
                   </div>
                 </CardContent>
               </Card>
-              <Card className="rounded-xl shadow-none border">
+
+              <Card className="rounded-xl shadow-none border telemetry-metric-card">
                 <CardContent className="p-2">
-                  <div className="text-[11px]" style={{ color: "rgb(107,114,128)" }}>
-                    Tiempo
-                  </div>
-                  <div className="text-lg font-semibold">
+                  <div className="telemetry-metric-label">Tiempo</div>
+                  <div className="telemetry-metric-value">
                     {(totalTimeMin ?? 0).toFixed(1)} min
                   </div>
                 </CardContent>
               </Card>
-              <Card className="rounded-xl shadow-none border">
+
+              <Card className="rounded-xl shadow-none border telemetry-metric-card">
                 <CardContent className="p-2">
-                  <div className="text-[11px]" style={{ color: "rgb(107,114,128)" }}>
-                    Energía
-                  </div>
-                  <div className="text-lg font-semibold">
+                  <div className="telemetry-metric-label">Energía</div>
+                  <div className="telemetry-metric-value">
                     {(totalEnergy_kWh ?? 0).toFixed(3)} kWh
                   </div>
                 </CardContent>
@@ -441,8 +496,13 @@ export default function TelemetryPage() {
             </div>
 
             {/* Downsample */}
-            <div style={{ marginBottom: 4 }}>
-              <label className="text-sm font-medium">Downsample</label>
+            <div className="telemetry-downsample">
+              <label className="telemetry-downsample-label">
+                <span>Downsample</span>
+                <span className="telemetry-downsample-value">
+                  {downsample}x
+                </span>
+              </label>
               <Slider
                 value={[downsample]}
                 onValueChange={([v]) =>
@@ -452,20 +512,35 @@ export default function TelemetryPage() {
                 max={10}
                 step={1}
               />
-              <div
-                className="text-xs"
-                style={{ color: "rgb(107,114,128)", marginTop: 2 }}
-              >
-                {downsample}x
-              </div>
             </div>
 
-            <div
-              className="hint"
-              style={{ fontSize: 12, marginTop: 8 }}
-            >
-              Carga un archivo de telemetría en JSON para visualizar la ruta y
-              las curvas de potencia, velocidad, altitud y energía.
+            <p className="telemetry-hint">
+              Puedes usar:
+              <br />
+              • GeoJSON exportado desde el mapa (con telemetría y puntos de
+              carga) <br />
+              • Archivos de telemetría reales en formato JSON.
+            </p>
+
+            {/* BOTONES ABAJO */}
+            <div className="telemetry-actions telemetry-actions-bottom">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => inputRef.current?.click()}
+                className="btn ghost"
+              >
+                <Upload className="w-4 h-4 mr-1" /> Cargar
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAll}
+                disabled={!geojson && !fileName}
+                className="btn ghost"
+              >
+                <Undo2 className="w-4 h-4 mr-1" /> Limpiar
+              </Button>
             </div>
           </div>
         </aside>
@@ -481,23 +556,59 @@ export default function TelemetryPage() {
         </div>
       </div>
 
-      {/* Bloque inferior: gráficas de telemetría */}
+      {/* Bloque inferior: gráficas de telemetría (layout vertical tipo MapPage) */}
       <section className="stats-section">
         <div className="stats-header">
           <h2>Estadísticas de la telemetría</h2>
         </div>
 
-        <div className="stats-grid">
-          {/* Potencia vs tiempo */}
-          <div className="stats-card">
-            <h3>Potencia vs tiempo</h3>
-            {chart_time_power.length ? (
-              <div style={{ height: 220 }}>
-                <ResponsiveContainer width="100%" height="100%">
+        <div className="stats-layout">
+          {/* === Fila 1: Resumen general (full width) === */}
+          <section className="stats-row">
+            <div className="stats-card stats-card-full">
+              <h3>Resumen general</h3>
+              {geojson ? (
+                <ul>
+                  <li>
+                    <strong>Distancia total:</strong>{" "}
+                    {Number.isFinite(totalKm)
+                      ? `${totalKm.toFixed(2)} km`
+                      : "N/D"}
+                  </li>
+                  <li>
+                    <strong>Tiempo total:</strong>{" "}
+                    {Number.isFinite(totalTimeMin)
+                      ? `${totalTimeMin.toFixed(1)} min`
+                      : "N/D"}
+                  </li>
+                  <li>
+                    <strong>Energía estimada:</strong>{" "}
+                    {Number.isFinite(totalEnergy_kWh)
+                      ? `${totalEnergy_kWh.toFixed(3)} kWh`
+                      : "N/D"}
+                  </li>
+                  <li>
+                    <strong>Puntos de telemetría:</strong>{" "}
+                    {telemetryRows.length || "N/D"}
+                  </li>
+                </ul>
+              ) : (
+                <p>Aún no hay telemetría cargada.</p>
+              )}
+            </div>
+          </section>
+
+          {/* === Fila 2: Potencia + Velocidad === */}
+          <section className="stats-row stats-row-two">
+            <div className="stats-card">
+              <h3>Potencia vs tiempo</h3>
+              {chart_time_power.length ? (
+                <ResponsiveContainer width="100%" height={220}>
                   <AreaChart data={chart_time_power}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="t_s"
+                      tick={{ fontSize: 10 }}
                       label={{
                         value: "Tiempo (s)",
                         position: "insideBottomRight",
@@ -505,6 +616,7 @@ export default function TelemetryPage() {
                       }}
                     />
                     <YAxis
+                      tick={{ fontSize: 10 }}
                       label={{
                         value: "kW",
                         angle: -90,
@@ -515,27 +627,27 @@ export default function TelemetryPage() {
                     <Area
                       type="monotone"
                       dataKey="power_kW"
-                      fill="#c7d2fe"
-                      stroke="#4f46e5"
+                      name="Potencia (kW)"
+                      fill="#e5e7eb"
+                      stroke="#4b5563"
+                      strokeWidth={2}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
-            ) : (
-              <p>No hay datos de potencia aún.</p>
-            )}
-          </div>
+              ) : (
+                <p>No hay datos de potencia aún.</p>
+              )}
+            </div>
 
-          {/* Velocidad vs tiempo */}
-          <div className="stats-card">
-            <h3>Velocidad vs tiempo</h3>
-            {chart_speed.length ? (
-              <div style={{ height: 220 }}>
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="stats-card">
+              <h3>Velocidad vs tiempo</h3>
+              {chart_speed.length ? (
+                <ResponsiveContainer width="100%" height={220}>
                   <LineChart data={chart_speed}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="t_s"
+                      tick={{ fontSize: 10 }}
                       label={{
                         value: "Tiempo (s)",
                         position: "insideBottomRight",
@@ -543,6 +655,7 @@ export default function TelemetryPage() {
                       }}
                     />
                     <YAxis
+                      tick={{ fontSize: 10 }}
                       label={{
                         value: "km/h",
                         angle: -90,
@@ -553,27 +666,29 @@ export default function TelemetryPage() {
                     <Line
                       type="monotone"
                       dataKey="speed_kmh"
-                      stroke="#10b981"
+                      name="Velocidad (km/h)"
                       dot={false}
+                      strokeWidth={2}
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
-            ) : (
-              <p>No hay datos de velocidad aún.</p>
-            )}
-          </div>
+              ) : (
+                <p>No hay datos de velocidad aún.</p>
+              )}
+            </div>
+          </section>
 
-          {/* Altitud vs tiempo */}
-          <div className="stats-card">
-            <h3>Altitud vs tiempo</h3>
-            {chart_alt.length ? (
-              <div style={{ height: 220 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chart_alt}>
+          {/* === Fila 3: SoC + Energía acumulada === */}
+          <section className="stats-row stats-row-two">
+            <div className="stats-card">
+              <h3>SoC vs tiempo</h3>
+              {chart_soc.length ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={chart_soc}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="t_s"
+                      tick={{ fontSize: 10 }}
                       label={{
                         value: "Tiempo (s)",
                         position: "insideBottomRight",
@@ -581,8 +696,9 @@ export default function TelemetryPage() {
                       }}
                     />
                     <YAxis
+                      tick={{ fontSize: 10 }}
                       label={{
-                        value: "m",
+                        value: "SoC",
                         angle: -90,
                         position: "insideLeft",
                       }}
@@ -590,28 +706,27 @@ export default function TelemetryPage() {
                     <Tooltip />
                     <Line
                       type="monotone"
-                      dataKey="alt_m"
-                      stroke="#f59e0b"
+                      dataKey="soc"
+                      name="SoC"
                       dot={false}
+                      strokeWidth={2}
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
-            ) : (
-              <p>No hay datos de altitud aún.</p>
-            )}
-          </div>
+              ) : (
+                <p>No hay datos de SoC aún.</p>
+              )}
+            </div>
 
-          {/* Energía acumulada vs distancia */}
-          <div className="stats-card">
-            <h3>Energía acumulada vs distancia</h3>
-            {chart_energy_vs_dist.length ? (
-              <div style={{ height: 220 }}>
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="stats-card">
+              <h3>Energía acumulada vs distancia</h3>
+              {chart_energy_vs_dist.length ? (
+                <ResponsiveContainer width="100%" height={220}>
                   <AreaChart data={chart_energy_vs_dist}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="cum_km"
+                      tick={{ fontSize: 10 }}
                       label={{
                         value: "Distancia (km)",
                         position: "insideBottomRight",
@@ -619,6 +734,7 @@ export default function TelemetryPage() {
                       }}
                     />
                     <YAxis
+                      tick={{ fontSize: 10 }}
                       label={{
                         value: "kWh",
                         angle: -90,
@@ -629,16 +745,20 @@ export default function TelemetryPage() {
                     <Area
                       type="monotone"
                       dataKey="cum_kWh"
-                      fill="#e9d5ff"
-                      stroke="#7e22ce"
+                      name="Energía acumulada (kWh)"
+                      fill="#e5e7eb"
+                      stroke="#6b7280"
+                      strokeWidth={2}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
-            ) : (
-              <p>No hay datos de energía aún.</p>
-            )}
-          </div>
+              ) : (
+                <p>No hay datos de energía aún.</p>
+              )}
+            </div>
+          </section>
+
+          {/* === Fila 4: Puntos de carga === */}
         </div>
       </section>
     </section>
