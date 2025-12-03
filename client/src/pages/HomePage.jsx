@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import BidEafitLogo from "../images/bid-eafit-logo.png"; // ajusta ruta si es necesario
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -114,6 +115,22 @@ export default function HomePage() {
           color: #333;
         }
 
+        .hero-question {
+          font-size: 16px;
+          color: #333;
+        }
+
+        .hero-divider {
+          width: 1px;
+          height: 40px;
+          background: #aaa;
+        }
+
+        .hero-bid-logo {
+          height: 150px;
+          object-fit: contain;
+        }
+
         .tabs-container {
           display: flex;
           gap: 12px;
@@ -184,6 +201,12 @@ export default function HomePage() {
           display: flex;
           flex-direction: column;
           gap: 16px;
+        }
+
+        /*  ESTA ES LA MODIFICACIÓN PARA CENTRAR EL TÍTULO */
+        .option-title {
+          text-align: center;
+          width: 100%;
         }
 
         .option-card h3 {
@@ -283,10 +306,18 @@ export default function HomePage() {
       `}</style>
 
       <div className="home-container">
+
         {/* Hero Search */}
         <div className="hero-search">
-          <span className="hero-text">¿Qué hace esta plataforma?</span>
-          <div className="logo-img">BID-EAFIT</div>
+          <span className="hero-question">¿Qué hace esta plataforma?</span>
+          <div className="hero-divider" />
+          <div className="hero-logo-wrap">
+            <img
+              src={BidEafitLogo}
+              alt="Proyecto BID - EAFIT"
+              className="hero-bid-logo"
+            />
+          </div>
         </div>
 
         {/* Tabs */}
@@ -323,7 +354,10 @@ export default function HomePage() {
         <div className="options-grid">
           {options.map((option, idx) => (
             <div key={idx} className={`option-card ${option.cta ? "cta" : ""}`}>
-              <h3>{option.title}</h3>
+              
+              {/* TITULO CENTRADO */}
+              <h3 className="option-title">{option.title}</h3>
+
               {option.items ? (
                 <ul>
                   {option.items.map((item, i) => (
@@ -339,7 +373,9 @@ export default function HomePage() {
                   </p>
                   <button
                     className="cta-button"
-                    onClick={() => navigate(activeTab === "simulation" ? "/mapa" : "/telemetry")}
+                    onClick={() =>
+                      navigate(activeTab === "simulation" ? "/mapa" : "/telemetry")
+                    }
                   >
                     {activeTab === "simulation" ? "Iniciar simulación" : "Iniciar Telemetría"}
                   </button>

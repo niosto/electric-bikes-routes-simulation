@@ -1,20 +1,24 @@
 export default function Footer() {
   return (
     <footer className="footer">
-      <div className="footer-content">
-        <div className="footer-section">
-          <h4>Nuestras sedes</h4>
-          <p>Línea nacional: 01 8000 515 900</p>
-          <p>WhatsApp: (57) 310 899 2908</p>
-        </div>
+      <div className="footer-row">
+        <span className="footer-title">Nuestras sedes</span>
+        <span className="footer-contact">
+          <strong>Línea nacional:</strong> 01 8000 515 900
+        </span>
+        <span className="footer-contact">
+          <strong>WhatsApp:</strong> (57) 310 899 2908
+        </span>
+      </div>
 
-        <div className="footer-cities">
-          <span>EAFIT Medellín</span>
-          <span>EAFIT Pereira</span>
-          <span>EAFIT Bogotá</span>
-          <span>EAFIT Llanogrande</span>
-        </div>
+      <div className="footer-divider"></div>
+
+      <div className="footer-row footer-row-bottom">
+        <span className="footer-branch">EAFIT Medellín</span>
+        <span className="footer-branch">EAFIT Pereira</span>
+        <span className="footer-branch">EAFIT Bogotá</span>
+        <span className="footer-branch">EAFIT Llanogrande</span>
       </div>
     </footer>
-  )
+  );
 }

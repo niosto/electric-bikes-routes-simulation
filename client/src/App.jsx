@@ -40,13 +40,21 @@ function AppFrame() {
 
   return (
     <PageShell>
+      {/* Fila 1 del grid: barra superior */}
       <TopNav brand={null} tabs={tabs} activeKey={activeKey} />
-      {/* Aquí sólo va el contenido de cada página, sin barra duplicada */}
-      <Outlet />
-      <Footer />
+
+      {/* Fila 2 del grid: TODO el contenido + footer */}
+      <main className="app-main">
+        {/* Aquí React Router inyecta HomePage, MapPage, etc. */}
+        <Outlet />
+
+        {/* Footer SIEMPRE al final del contenido */}
+        <Footer />
+      </main>
     </PageShell>
   )
 }
+
 
 export default function App() {
   return (

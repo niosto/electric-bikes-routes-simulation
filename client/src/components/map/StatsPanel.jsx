@@ -11,6 +11,11 @@ import {
   Bar,
 } from "recharts";
 
+import { COLORS } from "../../utils/colors";
+
+const getColor = (index) => COLORS[index % COLORS.length];
+
+
 export default function StatsPanel({
   routes,
   totalSummary,
@@ -82,26 +87,27 @@ export default function StatsPanel({
     });
   }, [powerSocData]);
 
+  // Emisiones (puedes ajustar factores si quieres)
   const emisiones_co2_kg = useMemo(() => {
-    let factor_emision_gco2_km = 70;
+    const factor_emision_gco2_km = 70;
     if (!Number.isFinite(distanceKm)) return null;
     return (distanceKm * factor_emision_gco2_km) / 1000;
   }, [distanceKm]);
 
   const emisiones_co2_equivalente_electrico_kg = useMemo(() => {
-    let factor_emision_electrico_gco2_km = 35;
+    const factor_emision_electrico_gco2_km = 35;
     if (!Number.isFinite(distanceKm)) return null;
     return (distanceKm * factor_emision_electrico_gco2_km) / 1000;
   }, [distanceKm]);
 
   const emisiones_co2_equivalente_kg = useMemo(() => {
     const factor_emision_co2_kg_galon = 8.887;
-    if (!Number.isFinite(distanceKm)) return null;
-    let c = cumulativeEnergyData[cumulativeEnergyData.length - 1];
-    let poder_calorifico_gasolina_kwh_galon = 33.7;
-    const consumo_galones = c?.energyIndex
-      ? c.energyIndex / poder_calorifico_gasolina_kwh_galon
-      : 0;
+    if (!Number.isFinite(distanceKm) || !cumulativeEnergyData.length)
+      return null;
+    const c = cumulativeEnergyData[cumulativeEnergyData.length - 1];
+    const poder_calorifico_gasolina_kwh_galon = 33.7;
+    const consumo_galones =
+      c.energyIndex / poder_calorifico_gasolina_kwh_galon;
     return consumo_galones * factor_emision_co2_kg_galon;
   }, [distanceKm, cumulativeEnergyData]);
 
@@ -158,7 +164,7 @@ export default function StatsPanel({
     window.print();
   };
 
-  // === 7. NUEVO: datos de puntos de carga ===
+  // === 7. Puntos de carga (para la nueva tarjeta) ===
   const chargePoints = Array.isArray(activeRoute?.charge_points)
     ? activeRoute.charge_points
     : [];
@@ -221,274 +227,82 @@ export default function StatsPanel({
         </div>
       </div>
 
-      <div className="stats-grid">
-        {/* ===== Tarjeta 1: Resumen general ===== */}
-        <div className="stats-card">
-          <h3>Resumen general</h3>
-          {activeRoute ? (
-            <ul>
-              <li>
-                <strong>Vehículo:</strong> {activeId}
-              </li>
-              {Number.isFinite(distanceKm) && (
+            {/* NUEVO LAYOUT VERTICAL */}
+      <div className="stats-layout">
+        {/* === Fila 1: Resumen general (full width) === */}
+        <section className="stats-row">
+          <div className="stats-card stats-card-full">
+            <h3>Resumen general</h3>
+            {activeRoute ? (
+              <ul>
                 <li>
-                  <strong>Distancia:</strong> {distanceKm.toFixed(2)} km
+                  <strong>Vehículo:</strong> {activeId}
                 </li>
-              )}
-              {Number.isFinite(durationMin) && (
+                {Number.isFinite(distanceKm) && (
+                  <li>
+                    <strong>Distancia:</strong> {distanceKm.toFixed(2)} km
+                  </li>
+                )}
+                {Number.isFinite(durationMin) && (
+                  <li>
+                    <strong>Duración:</strong> {durationMin.toFixed(1)} min
+                  </li>
+                )}
+                {Number.isFinite(avgPower) && (
+                  <li>
+                    <strong>Potencia media:</strong> {avgPower.toFixed(0)} W
+                  </li>
+                )}
                 <li>
-                  <strong>Duración:</strong> {durationMin.toFixed(1)} min
+                  <strong>Puntos de ruta:</strong>{" "}
+                  {powerSocData.length ||
+                    activeRoute.geometry?.coordinates?.length ||
+                    "N/D"}
                 </li>
-              )}
-              {Number.isFinite(avgPower) && (
-                <li>
-                  <strong>Potencia media:</strong> {avgPower.toFixed(0)} W
-                </li>
-              )}
-              <li>
-                <strong>Puntos de ruta:</strong>{" "}
-                {powerSocData.length ||
-                  activeRoute.geometry?.coordinates?.length ||
-                  "N/D"}
-              </li>
-              {Number.isFinite(emisiones_co2_kg) && (
-                <li>
-                  <strong>Emisiones de CO₂:</strong>{" "}
-                  {emisiones_co2_kg.toFixed(1)} kg
-                </li>
-              )}
-              {Number.isFinite(emisiones_co2_equivalente_kg) && (
-                <li>
-                  <strong>Emisiones (desde galones):</strong>{" "}
-                  {emisiones_co2_equivalente_kg.toFixed(1)} kg
-                </li>
-              )}
-              {Number.isFinite(
-                emisiones_co2_equivalente_electrico_kg
-              ) && (
-                <li>
-                  <strong>Emisiones equivalentes (motocicleta
-                    eléctrica):</strong>{" "}
-                  {emisiones_co2_equivalente_electrico_kg.toFixed(1)} kg
-                </li>
-              )}
-            </ul>
-          ) : (
-            <p>Aún no hay rutas calculadas.</p>
-          )}
-        </div>
-
-        {/* ===== Tarjeta 2: Potencia ===== */}
-        <div className="stats-card">
-          <h3>Potencia por segmento</h3>
-          {powerSocData.length ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart
-                data={powerSocData}
-                margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-              >
-                <XAxis
-                  dataKey="idx"
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "Segmento",
-                    position: "insideBottomRight",
-                    offset: -4,
-                  }}
-                />
-                <YAxis
-                  yAxisId="left"
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "Potencia (W)",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-                <Tooltip />
-                <Legend />
-                <Line
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="power"
-                  name="Potencia (W)"
-                  dot={false}
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p>No hay datos de potencia todavía.</p>
-          )}
-        </div>
-
-        {/* ===== Tarjeta 3: SoC ===== */}
-        <div className="stats-card">
-          <h3>Estado de carga (SoC)</h3>
-          {powerSocData.length ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart
-                data={powerSocData}
-                margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-              >
-                <XAxis
-                  dataKey="idx"
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "Segmento",
-                    position: "insideBottomRight",
-                    offset: -4,
-                  }}
-                />
-                <YAxis
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "SoC",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="soc"
-                  name="SoC"
-                  dot={false}
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p>No hay datos de SoC todavía.</p>
-          )}
-        </div>
-
-        {/* ===== Tarjeta 4: "Energía" acumulada (índice) ===== */}
-        <div className="stats-card">
-          <h3>Índice de energía acumulada</h3>
-          {cumulativeEnergyData.length ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart
-                data={cumulativeEnergyData}
-                margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-              >
-                <XAxis
-                  dataKey="idx"
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "Segmento",
-                    position: "insideBottomRight",
-                    offset: -4,
-                  }}
-                />
-                <YAxis
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "Índice (∑ potencia)",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="energyIndex"
-                  name="Índice de energía"
-                  dot={false}
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p>No hay datos suficientes para el índice de energía.</p>
-          )}
-        </div>
-
-        {/* ===== Tarjeta 5: Comparación entre vehículos ===== */}
-        <div className="stats-card">
-          <h3>Comparación entre vehículos</h3>
-          {comparisonData.length > 1 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart
-                data={comparisonData}
-                margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-              >
-                <XAxis dataKey="vehicle" tick={{ fontSize: 10 }} />
-                <YAxis
-                  yAxisId="left"
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "Distancia (km)",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "Duración (min)",
-                    angle: 90,
-                    position: "insideRight",
-                  }}
-                />
-                <Tooltip />
-                <Legend />
-                <Bar
-                  yAxisId="left"
-                  dataKey="distanceKm"
-                  name="Distancia (km)"
-                />
-                <Bar
-                  yAxisId="right"
-                  dataKey="durationMin"
-                  name="Duración (min)"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p>
-              Añade más motos y calcula sus rutas para ver la comparación de
-              distancia y tiempo.
-            </p>
-          )}
-        </div>
-
-        {/* ===== Tarjeta 6: NUEVO - Puntos de carga ===== */}
-        <div className="stats-card">
-          <h3>Puntos de carga</h3>
-          {!chargePoints.length ? (
-            <p>Esta ruta no realizó recargas de batería.</p>
-          ) : (
-            <>
-              <ul style={{ marginBottom: "0.75rem" }}>
-                <li>
-                  <strong>Número de recargas:</strong>{" "}
-                  {chargeSummary.count}
-                </li>
-                <li>
-                  <strong>Energía total recargada:</strong>{" "}
-                  {chargeSummary.totalEnergyKwh.toFixed(2)} kWh
-                </li>
-                <li>
-                  <strong>Tiempo total en carga:</strong>{" "}
-                  {chargeSummary.totalTimeMin.toFixed(1)} min
-                </li>
+                {Number.isFinite(emisiones_co2_kg) && (
+                  <li>
+                    <strong>Emisiones de CO₂:</strong>{" "}
+                    {emisiones_co2_kg.toFixed(1)} kg
+                  </li>
+                )}
+                {Number.isFinite(emisiones_co2_equivalente_kg) && (
+                  <li>
+                    <strong>Emisiones (desde galones):</strong>{" "}
+                    {emisiones_co2_equivalente_kg.toFixed(1)} kg
+                  </li>
+                )}
+                {Number.isFinite(
+                  emisiones_co2_equivalente_electrico_kg
+                ) && (
+                  <li>
+                    <strong>
+                      Emisiones equivalentes (motocicleta eléctrica):
+                    </strong>{" "}
+                    {emisiones_co2_equivalente_electrico_kg.toFixed(1)} kg
+                  </li>
+                )}
               </ul>
+            ) : (
+              <p>Aún no hay rutas calculadas.</p>
+            )}
+          </div>
+        </section>
 
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart
-                  data={chargeChartData}
+        {/* === Fila 2: Potencia + SoC === */}
+        <section className="stats-row stats-row-two">
+          <div className="stats-card">
+            <h3>Potencia por segmento</h3>
+            {powerSocData.length ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart
+                  data={powerSocData}
                   margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
                 >
                   <XAxis
                     dataKey="idx"
                     tick={{ fontSize: 10 }}
                     label={{
-                      value: "Punto de carga",
+                      value: "Segmento",
                       position: "insideBottomRight",
                       offset: -4,
                     }}
@@ -497,7 +311,130 @@ export default function StatsPanel({
                     yAxisId="left"
                     tick={{ fontSize: 10 }}
                     label={{
-                      value: "Energía (kWh)",
+                      value: "Potencia (W)",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="power"
+                    name="Potencia (W)"
+                    dot={false}
+                    strokeWidth={2}
+                    stroke={getColor(0)}   // rojo
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p>No hay datos de potencia todavía.</p>
+            )}
+          </div>
+
+          <div className="stats-card">
+            <h3>Estado de carga (SoC)</h3>
+            {powerSocData.length ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart
+                  data={powerSocData}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+                >
+                  <XAxis
+                    dataKey="idx"
+                    tick={{ fontSize: 10 }}
+                    label={{
+                      value: "Segmento",
+                      position: "insideBottomRight",
+                      offset: -4,
+                    }}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10 }}
+                    label={{
+                      value: "SoC",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="soc"
+                    name="SoC"
+                    dot={false}
+                    strokeWidth={2}
+                    stroke={getColor(1)}   // azul
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p>No hay datos de SoC todavía.</p>
+            )}
+          </div>
+        </section>
+
+        {/* === Fila 3: Energía acumulada + Comparación vehículos === */}
+        <section className="stats-row stats-row-two">
+          <div className="stats-card">
+            <h3>Índice de energía acumulada</h3>
+            {cumulativeEnergyData.length ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart
+                  data={cumulativeEnergyData}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+                >
+                  <XAxis
+                    dataKey="idx"
+                    tick={{ fontSize: 10 }}
+                    label={{
+                      value: "Segmento",
+                      position: "insideBottomRight",
+                      offset: -4,
+                    }}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10 }}
+                    label={{
+                      value: "Índice (∑ potencia)",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="energyIndex"
+                    name="Índice de energía"
+                    dot={false}
+                    strokeWidth={2}
+                    stroke={getColor(2)}   // verde
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p>No hay datos suficientes para el índice de energía.</p>
+            )}
+          </div>
+
+          <div className="stats-card">
+            <h3>Comparación entre vehículos</h3>
+            {comparisonData.length > 1 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={comparisonData}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+                >
+                  <XAxis dataKey="vehicle" tick={{ fontSize: 10 }} />
+                  <YAxis
+                    yAxisId="left"
+                    tick={{ fontSize: 10 }}
+                    label={{
+                      value: "Distancia (km)",
                       angle: -90,
                       position: "insideLeft",
                     }}
@@ -507,7 +444,7 @@ export default function StatsPanel({
                     orientation="right"
                     tick={{ fontSize: 10 }}
                     label={{
-                      value: "Tiempo (min)",
+                      value: "Duración (min)",
                       angle: 90,
                       position: "insideRight",
                     }}
@@ -516,19 +453,103 @@ export default function StatsPanel({
                   <Legend />
                   <Bar
                     yAxisId="left"
-                    dataKey="energy_kwh"
-                    name="Energía recargada (kWh)"
+                    dataKey="distanceKm"
+                    name="Distancia (km)"
+                    fill={getColor(3)}   // ámbar
                   />
                   <Bar
                     yAxisId="right"
-                    dataKey="time_min"
-                    name="Tiempo de carga (min)"
+                    dataKey="durationMin"
+                    name="Duración (min)"
+                    fill={getColor(4)}   // púrpura
                   />
                 </BarChart>
               </ResponsiveContainer>
-            </>
-          )}
-        </div>
+            ) : (
+              <p>
+                Añade más motos y calcula sus rutas para ver la comparación de
+                distancia y tiempo.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* === Fila 4: Puntos de carga (full width) === */}
+        <section className="stats-row">
+          <div className="stats-card stats-card-full">
+            <h3>Puntos de carga</h3>
+            {!chargePoints.length ? (
+              <p>Esta ruta no realizó recargas de batería.</p>
+            ) : (
+              <>
+                <ul style={{ marginBottom: "0.75rem" }}>
+                  <li>
+                    <strong>Número de recargas:</strong>{" "}
+                    {chargeSummary.count}
+                  </li>
+                  <li>
+                    <strong>Energía total recargada:</strong>{" "}
+                    {chargeSummary.totalEnergyKwh.toFixed(2)} kWh
+                  </li>
+                  <li>
+                    <strong>Tiempo total en carga:</strong>{" "}
+                    {chargeSummary.totalTimeMin.toFixed(1)} min
+                  </li>
+                </ul>
+
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart
+                    data={chargeChartData}
+                    margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+                  >
+                    <XAxis
+                      dataKey="idx"
+                      tick={{ fontSize: 10 }}
+                      label={{
+                        value: "Punto de carga",
+                        position: "insideBottomRight",
+                        offset: -4,
+                      }}
+                    />
+                    <YAxis
+                      yAxisId="left"
+                      tick={{ fontSize: 10 }}
+                      label={{
+                        value: "Energía (kWh)",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      tick={{ fontSize: 10 }}
+                      label={{
+                        value: "Tiempo (min)",
+                        angle: 90,
+                        position: "insideRight",
+                      }}
+                    />
+                    <Tooltip />
+                    <Legend />
+                    <Bar
+                      yAxisId="left"
+                      dataKey="energy_kwh"
+                      name="Energía recargada (kWh)"
+                      fill={getColor(5)}   // rosa
+                    />
+                    <Bar
+                      yAxisId="right"
+                      dataKey="time_min"
+                      name="Tiempo de carga (min)"
+                      fill={getColor(6)}   // teal
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </>
+            )}
+          </div>
+        </section>
       </div>
     </>
   );

@@ -1,10 +1,10 @@
 export const COLORS = [
-  "#ef4444", // rojo
-  "#3b82f6", // azul
-  "#10b981", // verde
-  "#f59e0b", // ámbar
-  "#8b5cf6", // púrpura
-  "#ec4899", // rosa
-  "#14b8a6", // teal
-  "#f97316", // naranja
-]
+  "#3A6EA5",
+  "#6D9886",
+  "#C2B8A3",
+  "#A26769",
+  "#748CAB",
+  "#88A0A8",
+  "#ADA7A7",
+  "#567572",
+];
