@@ -110,7 +110,12 @@ async def estaciones(city: str = "amva"):
 async def routes(body: RoutesRequest):
     idx = 1
 
-    city = body.options.city or "med"
+    city = body.options.city
+    if not city:
+        raise HTTPException(
+            status_code=500, detail="NO hay ciudad"
+        )
+
     traffic = body.options.traffic  
 
     if not ORS_TOKEN and not AZURE_TOKEN:

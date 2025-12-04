@@ -1,5 +1,4 @@
 import math
-import numpy as np
 from geopy.distance import geodesic
 
 class Moto:
@@ -17,11 +16,6 @@ class Moto:
         # Umbral de energía para decidir recarga
         self.umbral_energia = self.capacidad_bateria * 0.95
         self.energia_antes_de_recarga = None
-
-        # Estos factores de corrección se usan para calibrar el consumo en el modelo,
-        # Se computaron usando el consumo real de la telemetría de una moto elécttrica 
-        self.factor_correccion = 0.959
-        self.eficiencia_tren = 0.95
 
         # Índices de recorrido
         self.idx = 0          # segmento (tramo)
@@ -57,7 +51,7 @@ class Moto:
             from HybridBikeConsumptionModel.parameters_hybrid import HEV
         self.hev = HEV()
 
-    def estacion_cercana(self, current_pos):
+    def nearest_station(self, current_pos):
         destiny = self.route_data[self.idx]["coords"][-1][:2]
 
         distancias = [
@@ -69,7 +63,7 @@ class Moto:
         idx_est = distancias.index(min(distancias))
         return idx_est
 
-    def añadir_punto_carga(self, station_idx, current_pos):
+    def add_charge_point(self, station_idx, current_pos):
         """
         Marca el inicio de un punto de recarga.
         El valor de energy_charged se rellenará cuando realmente se haga la carga.
@@ -82,7 +76,7 @@ class Moto:
             "energy_charged": 0.0,
         })
 
-    def cambiar_ruta(self, new_route):
+    def change_route(self, new_route):
         """
         Inserta una nueva ruta (por ejemplo hacia estación) en el plan actual,
         cortando el segmento actual en el punto donde se va a desviar.
@@ -101,7 +95,7 @@ class Moto:
         self.idx_ruta = 0
         self.idx += 1
 
-    def cargar(self):
+    def charge(self):
         """
         Simula una recarga completa de la batería en el último punto de recarga registrado.
         Calcula cuánta energía se cargó y el tiempo estimado de carga.
@@ -130,108 +124,76 @@ class Moto:
         self.en_carga = False
 
     def consume_step(self):
-        
-        # Calcula fuerzas, potencias y consumos en un "paso" de la simulación
-        # y actualiza la batería y los acumulados de consumo.
-        # Sincronizado con calcular_soc, calcular_potencia_por_punto y calcular_consumo_y_emisiones
-        
+        """
+        Calcula fuerzas, potencias y consumos en un "paso" de la simulación
+        y actualiza la batería y los acumulados de consumo.
+        """
         hev = self.hev
         segment = self.route_data[self.idx]
 
         if self.idx_ruta >= len(segment["coords"]):
             return False  # fin de este segmento
 
-        # Velocidad en m/s 
         vel = segment["speeds"][self.idx_ruta]
-        theta = segment["slopes"][self.idx_ruta] * math.pi / 180
-
-        # Parámetros del modelo
-        rho = self.hev.Ambient.rho  # densidad del aire
-        g = self.hev.Ambient.g     # gravedad
-        rw = self.hev.Wheel.rw     # radio de rueda
+        theta = math.radians(segment["slopes"][self.idx_ruta])
 
         # Fuerzas
-        faero = 0.5 * rho * hev.Chassis.a * hev.Chassis.cd * (vel ** 2)
-        froll = g * hev.Chassis.m * hev.Chassis.crr * np.cos(theta)
-        fg = g * hev.Chassis.m * np.sin(theta)
-        
-        # Velocidad anterior para calcular inercia
-        if self.idx_ruta > 0:
-            v_prev = segment["speeds"][self.idx_ruta - 1]
-        else:
-            v_prev = 0
-        
-        delta_v = vel - v_prev
-        f_inertia = hev.Chassis.m * delta_v  # delta_t = 1 segundo
+        faero = 0.5 * hev.Ambient.rho * hev.Chassis.a * hev.Chassis.cd * (vel ** 2)
+        froll = hev.Ambient.g * hev.Chassis.m * hev.Chassis.crr * math.cos(theta)
+        fg = hev.Ambient.g * hev.Chassis.m * math.sin(theta)
+        v_prev = segment["speeds"][self.idx_ruta - 1] if self.idx_ruta > 0 else 0
+        f_inertia = hev.Chassis.m * (vel - v_prev)
 
         fres = faero + froll + fg + f_inertia
 
-        # Potencias en el tren motriz 
-        p_e = vel * fres
-        p_m = (fres * rw) * (vel / rw)
+        # Potencias en el tren motriz
+        p_m = (fres * hev.Wheel.rw) * (vel / hev.Wheel.rw)
 
         # Parte eléctrica
-        p_eb = p_m * (1 - self.hybrid_cont) / self.eficiencia_tren
-
-        p_eb = p_eb * self.factor_correccion
-        if p_eb < 0:
-            p_eb = 0
+        p_eb = p_m * (1 - self.hybrid_cont) / 0.85
+        factor_correccion = 1.617
+        p_eb = max(0, p_eb * factor_correccion)
 
         # Parte combustión
-        p_cn = p_m * self.hybrid_cont / 0.2
+        p_cn = p_m * (self.hybrid_cont) / 0.2
+        factor_correccion_combustion = 1.8
+        p_cn = max(0, p_cn * factor_correccion_combustion)
 
-        if p_cn <= 0:
-            p_cn = 0
-
-        # Cálculo de delta_t 
+        # Tiempo entre este punto y el anterior
         if self.idx_ruta == 0:
-            # Primer punto
-            if "ts" in segment and len(segment["ts"]) > 0:
-                # Si hay timestamps, usar 1/3600 horas como en calcular_soc
-                delta_t_horas = 1.0 / 3600.0
-            else:
-                # Si hay times, usar el primer valor o 1 segundo
-                delta_t = segment["times"][0] if segment["times"][0] > 0 else 1.0
-                delta_t_horas = delta_t / 3600.0
+            delta_t = segment["times"][0] if segment["times"][0] > 0 else 1.0
         else:
-            if "ts" in segment and len(segment["ts"]) > self.idx_ruta:
-                if segment["ts"][self.idx_ruta] > segment["ts"][self.idx_ruta - 1]:
-                    delta_t_ms = segment["ts"][self.idx_ruta] - segment["ts"][self.idx_ruta - 1]
-                    delta_t_horas = delta_t_ms / 1000.0 / 3600.0
-                else:
-                    delta_t_horas = 1.0 / 3600.0
-            else:
-                delta_t = max(
-                    segment["times"][self.idx_ruta] - segment["times"][self.idx_ruta - 1],
-                    0.1
-                )
-                delta_t_horas = delta_t / 3600.0
+            delta_t = max(
+                segment["times"][self.idx_ruta] - segment["times"][self.idx_ruta - 1],
+                0.1,
+            )
 
         # Consumos en este paso (kWh)
-        potencia_kw = p_eb / 1000.0
-        consumo_wh = potencia_kw * delta_t_horas * 1000  # en Wh
-        self.pow_consumption = consumo_wh / 1000  # convertir a kWh
-        
-        # Consumo de combustión
-        self.pcn_consumption = (p_cn / 1000.0) * delta_t_horas
+        tiempo_horas = delta_t / 3600.0
+        self.pow_consumption = (p_eb / 1000.0) * tiempo_horas
+        self.pcn_consumption = (p_cn / 1000.0) * tiempo_horas
 
         # Acumular consumos totales
         self.total_electric_kwh += self.pow_consumption
         self.total_combustion_kwh += self.pcn_consumption
 
-        # Actualización del SoC 
-        self.estado_bateria -= consumo_wh / 1000  # convertir Wh a kWh
-        if self.estado_bateria < 0:
-            self.estado_bateria = 0.0
-        
+        # Cálculo del SoC basado en consumo acumulado
+        prev_soc = self.soc_history[-1] if len(self.soc_history) > 0 else self.capacidad_bateria
+        prev_consumo = self.capacidad_bateria - prev_soc
+        consumo_kwh = self.pow_consumption
+        cons_acum = consumo_kwh + prev_consumo
+
+        # Actualizar estado de batería
+        self.estado_bateria = max(0, self.capacidad_bateria - cons_acum)
         self.soc_history.append(self.estado_bateria)
 
         # Guardar potencia (kW) y posición
+        potencia_kw = p_eb / 1000.0
         self.power.append(potencia_kw)
         self.positions.append(segment["coords"][self.idx_ruta])
 
         return True
-    
+
     def avanzar_paso(self):
         """
         Avanza un paso de simulación. Devuelve:
@@ -254,7 +216,7 @@ class Moto:
 
             # Si estaba en carga al final del segmento, completar la carga
             if self.en_carga:
-                self.cargar()
+                self.charge()
 
             return 1
 

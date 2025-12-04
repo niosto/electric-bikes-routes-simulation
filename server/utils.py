@@ -184,10 +184,10 @@ def get_vel_azure(features,elevation_data):
 
 def get_vel(steps, elevation_data):
     route = {
-        "coords": [],        # [lng, lat, alt] format
-        "speeds": [],      # Speed in m/s
-        "slopes": [],
-        "times": []    # Slope in degrees
+        "coords": [],      # [lng, lat, alt] format
+        "speeds": [],      # m/s
+        "slopes": [],      # grados  
+        "times": []    
     }
 
     total_time = 0

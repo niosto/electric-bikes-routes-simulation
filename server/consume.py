@@ -3,7 +3,7 @@ from utils import manage_segments
 from petitions import _fetch_ors_route, _fetch_azure_route, _fecth_alt
 import numpy as np
 
-async def route(coords, traffic, ors_token, azure_token, client):
+async def enrutar(coords, traffic, ors_token, azure_token, client):
     rutas_moto = []
     if traffic:
         for i in range(len(coords)-1):
@@ -42,7 +42,7 @@ async def route(coords, traffic, ors_token, azure_token, client):
 
 async def moto_consume(coords, estaciones, nombre, client, ors_token, azure_token, profile, city = "med", traffic=False):
 
-    rutas = await route(
+    rutas = await enrutar(
         coords=coords,
         traffic=traffic,
         ors_token=ors_token,
@@ -50,22 +50,24 @@ async def moto_consume(coords, estaciones, nombre, client, ors_token, azure_toke
         client=client
     )
 
-    moto = Moto(nombre, rutas, estaciones, hybrid_cont=0.5)
+    moto = Moto(nombre, rutas, estaciones, hybrid_cont=0)
     step_result = moto.avanzar_paso()
 
     while step_result != 0:
         if step_result == 3:
-            # Battery low: reroute to nearest charging station
+            # Batería baja
             current_pos = moto.route_data[moto.idx]["coords"][moto.idx_ruta][:2]
 
-            idx_est = moto.nearest_station(current_pos)
+            # Computar cual es la mejor estación para enrutar
+            idx_est = moto.estacion_cercana(current_pos)
             station_coord = estaciones["coords"][idx_est]
             destiny = moto.route_data[moto.idx]["coords"][-1][:2]
 
-            moto.add_charge_point(idx_est, current_pos)
 
-            # Fetch route to station + destino
-            nueva_ruta = await route(
+            moto.añadir_punto_carga(idx_est, current_pos)
+
+            # Enrutar desde la posicion actual, hacia la estación, y luego al destino original
+            nueva_ruta = await enrutar(
                 coords=[current_pos, station_coord, destiny],
                 traffic=traffic,
                 ors_token=ors_token,
@@ -73,15 +75,21 @@ async def moto_consume(coords, estaciones, nombre, client, ors_token, azure_toke
                 client=client
             )
 
-            moto.change_route(nueva_ruta)
-
-
+            moto.cambiar_ruta(nueva_ruta)
 
         step_result = moto.avanzar_paso()
         
     speeds = []
     for ruta in moto.route_data:
         speeds.extend(ruta["speeds"])
+
+        # Factores de emisión equivalentes de ciclo de vida (gCO₂/km)
+    factor_emision_electrico_gco2_km = 35  # Motocicleta eléctrica
+    factor_emision_combustion_gco2_km = 70  # Motocicleta a combustión
+
+    # Emisiones equivalentes de ciclo de vida (kg CO₂)
+    emisiones_electrico_kg = (factor_emision_electrico_gco2_km * moto.distance) / 1000
+    emisiones_combustion_kg = (factor_emision_combustion_gco2_km * moto.distance) / 1000
 
     return {
         "geometry": {
@@ -93,15 +101,15 @@ async def moto_consume(coords, estaciones, nombre, client, ors_token, azure_toke
             "soc": moto.soc_history,
             "speeds": speeds,
             "map_city": city,
-            # NUEVO: consumos totales de la moto
             "total_electric_kwh": moto.total_electric_kwh,
             "total_combustion_kwh": moto.total_combustion_kwh,
+            "emisiones_electricas": emisiones_electrico_kg,
+            "emisiones_combustion":emisiones_combustion_kg
         },
         "summary": {
             "distance": moto.distance,
             "duration": moto.duration
         },
         "alternatives": [],
-        # Cada punto ahora tiene energy_charged, charge_time_min, etc.
         "charge_points": moto.puntos_recarga_realizados
     }
