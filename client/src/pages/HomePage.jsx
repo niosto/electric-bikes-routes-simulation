@@ -83,52 +83,52 @@ export default function HomePage() {
     {
       src: Proyecto1,
       title:"",
-      description:"",
+      description:"Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
     {
       src: Proyecto2,
       title: "",
-      description: "",
+      description: "Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
     {
       src: Proyecto3,
       title: "",
-      description: "",
+      description: "Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
     {
       src: Proyecto4,
       title: "",
-      description: "",
+      description: "Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
     {
       src: Proyecto5,
       title: "",
-      description: "",
+      description: "Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
     {
       src: Proyecto6,
       title: "",
-      description: "",
+      description: "Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
     {
       src: Proyecto7,
       title: "",
-      description: "",
+      description: "Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
     {
       src: Proyecto8,
       title: "",
-      description: "",
+      description: "Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
     {
       src: Proyecto9,
       title: "",
-      description: "",
+      description: "Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
     {
       src: Proyecto10,
       title: "",
-      description: "",
+      description: "Se anazalizaron los roles, las oportunidades y los retos de las motocicletas eléctricas en la evolucion del transporte colombiano junto a actores clave del sector.",
     },
   ]
 
