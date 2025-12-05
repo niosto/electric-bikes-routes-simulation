@@ -700,9 +700,6 @@ export default function HomePage() {
           </div>
 
           {/* Contáctanos */}
-          <div className="contact-card">
-            <h3 className="card-title">Contáctanos</h3>
-          </div>
         </div>
       </div>
     </main>
