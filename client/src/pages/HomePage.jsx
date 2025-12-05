@@ -1,12 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import BidEafitLogo from "../images/bid-eafit-logo.png"; // ajusta ruta si es necesario
+import BidEafitLogo from "../images/bid-eafit-logo.png"
+
+// Imágenes de "Workshop: Motocicletas eléctricas en Colombia"
+import Proyecto1 from "../images/proyecto1.jpg"
+import Proyecto2 from "../images/proyecto2.jpg"
+import Proyecto3 from "../images/proyecto3.jpg"
+import Proyecto4 from "../images/proyecto4.jpg"
+import Proyecto5 from "../images/proyecto5.jpg"
+import Proyecto6 from "../images/proyecto6.jpg"
+import Proyecto7 from "../images/proyecto7.jpg"
+import Proyecto8 from "../images/proyecto8.jpg"
+import Proyecto9 from "../images/proyecto9.jpg"
+import Proyecto10 from "../images/proyecto10.jpg"
 
 export default function HomePage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("simulation")
+  const [projectIndex, setProjectIndex] = useState(0)
+  const [fade, setFade] = useState(false)
 
   const simulationOptions = [
     {
@@ -64,6 +78,91 @@ export default function HomePage() {
 
   const options = activeTab === "simulation" ? simulationOptions : telemetryOptions
 
+  // Carrusel "Workshop: Motocicletas eléctricas en Colombia"
+  const projectImages = [
+    {
+      src: Proyecto1,
+      title:"",
+      description:"",
+    },
+    {
+      src: Proyecto2,
+      title: "",
+      description: "",
+    },
+    {
+      src: Proyecto3,
+      title: "",
+      description: "",
+    },
+    {
+      src: Proyecto4,
+      title: "",
+      description: "",
+    },
+    {
+      src: Proyecto5,
+      title: "",
+      description: "",
+    },
+    {
+      src: Proyecto6,
+      title: "",
+      description: "",
+    },
+    {
+      src: Proyecto7,
+      title: "",
+      description: "",
+    },
+    {
+      src: Proyecto8,
+      title: "",
+      description: "",
+    },
+    {
+      src: Proyecto9,
+      title: "",
+      description: "",
+    },
+    {
+      src: Proyecto10,
+      title: "",
+      description: "",
+    },
+  ]
+
+  const goNextProject = () => {
+    setFade(true)
+    setTimeout(() => {
+      setProjectIndex((prev) => (prev + 1) % projectImages.length)
+      setFade(false)
+    }, 200)
+  }
+
+  const goPrevProject = () => {
+    setFade(true)
+    setTimeout(() => {
+      setProjectIndex((prev) =>
+        prev === 0 ? projectImages.length - 1 : prev - 1
+      )
+      setFade(false)
+    }, 200)
+  }
+
+  // Auto-slide cada 4 segundos con fade
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setFade(true)
+      setTimeout(() => {
+        setProjectIndex((prev) => (prev + 1) % projectImages.length)
+        setFade(false)
+      }, 200)
+    }, 4000)
+
+    return () => clearInterval(intervalId)
+  }, [])
+
   return (
     <main className="home-page">
       <style>{`
@@ -74,7 +173,7 @@ export default function HomePage() {
         }
 
         .home-container {
-          max-width: 1280px;
+          max-width: 1400px; /* más ancho para que el carrusel respire */
           margin: 0 auto;
         }
 
@@ -127,6 +226,12 @@ export default function HomePage() {
         .hero-bid-logo {
           height: 150px;
           object-fit: contain;
+        }
+
+        .hero-logo-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .tabs-container {
@@ -201,7 +306,6 @@ export default function HomePage() {
           gap: 16px;
         }
 
-        /*  ESTA ES LA MODIFICACIÓN PARA CENTRAR EL TÍTULO */
         .option-title {
           text-align: center;
           width: 100%;
@@ -267,44 +371,182 @@ export default function HomePage() {
           transform: translateY(-2px);
         }
 
+        /* === Sección inferior (Acerca del proyecto / Workshop: Motocicletas eléctricas en Colombia / Contáctanos) === */
         .bottom-section {
+          max-width: 1400px;
+          margin: 40px auto 60px;
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 24px;
-          margin-bottom: 40px;
+          grid-template-columns: 3fr 2fr; /* más espacio horizontal para carrusel */
+          gap: 32px;
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
           .bottom-section {
             grid-template-columns: 1fr;
           }
         }
 
-        .bottom-card {
+        .bottom-card,
+        .contact-card {
           background: #ddd;
           border-radius: 20px;
-          padding: 32px;
-          text-align: center;
-          min-height: 200px;
+          padding: 32px 40px;
+          color: #555;
+        }
+
+        .bottom-card {
+          min-height: 220px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #666;
+        }
+
+        .card-title {
           font-size: 16px;
+          font-weight: 600;
+          margin: 0 0 12px 0;
+        }
+
+        .about-card {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+
+        .about-card p {
+          margin: 0;
+          font-size: 14px;
+          line-height: 1.6;
+          max-width: 90%;
+        }
+
+        .center-card {
+          text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .contact-card {
           grid-column: 1 / -1;
-          background: #ddd;
-          border-radius: 20px;
-          padding: 32px;
           text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 15px;
+          font-weight: 500;
+        }
+
+        /* === Carrusel "Workshop: Motocicletas eléctricas en Colombia" === */
+        .projects-card {
+          padding: 24px 32px;
+        }
+
+        .projects-carousel {
+          width: 100%;
+          max-width: 800px; /* más ancho */
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .projects-image-wrapper {
+          position: relative;
+          width: 100%;
+          height: 400px; /* más alto, evita recortes */
+          border-radius: 20px;
+          overflow: hidden;
+          background: #cfcfcf;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .projects-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: opacity 0.5s ease-in-out;
+          opacity: 1;
+        }
+
+        .projects-image.fade {
+          opacity: 0;
+        }
+
+        .carousel-btn {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          border: none;
+          background: rgba(0, 0, 0, 0.45);
+          color: white;
+          width: 36px;
+          height: 36px;
+          border-radius: 999px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 22px;
+          cursor: pointer;
+          transition: background 0.2s ease, transform 0.1s ease;
+        }
+
+        .carousel-btn.prev {
+          left: 12px;
+        }
+
+        .carousel-btn.next {
+          right: 12px;
+        }
+
+        .carousel-btn:hover {
+          background: rgba(0, 0, 0, 0.7);
+          transform: translateY(-50%) scale(1.05);
+        }
+
+        .projects-caption {
+          text-align: center;
+        }
+
+        .projects-caption h4 {
+          margin: 0 0 4px 0;
+          font-size: 15px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .projects-caption p {
+          margin: 0;
+          font-size: 13px;
           color: #666;
+        }
+
+        .carousel-dots {
+          display: flex;
+          gap: 6px;
+          margin-top: 4px;
+        }
+
+        .carousel-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          border: none;
+          background: #bbb;
+          cursor: pointer;
+          transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .carousel-dot.active {
+          background: #111;
+          transform: scale(1.3);
         }
       `}</style>
 
       <div className="home-container">
-
         {/* Hero Search */}
         <div className="hero-search">
           <span className="hero-question">¿Qué hace esta plataforma?</span>
@@ -343,7 +585,7 @@ export default function HomePage() {
           </h2>
           <p>
             {activeTab === "simulation"
-              ? "Explora cómo diferentes tipos de motocicletas afectan la contaminación de aire en contextos urbanos y geográficos. Ayuda parámetros, especula simulaciones y analiza resultados técnicos y ambientales."
+              ? "Explora cómo diferentes tipos de motocicletas afectan la contaminación de aire en contextos urbanos y geográficos. Ajusta parámetros, ejecuta simulaciones y analiza resultados técnicos y ambientales."
               : "Visualiza los datos operacionales de cada vehículo conectado. Ubicación, energía, velocidad y desempeño. La telemetría te permite entender cómo se comportan tus motocicletas en condiciones reales de operación."}
           </p>
         </div>
@@ -352,8 +594,6 @@ export default function HomePage() {
         <div className="options-grid">
           {options.map((option, idx) => (
             <div key={idx} className={`option-card ${option.cta ? "cta" : ""}`}>
-              
-              {/* TITULO CENTRADO */}
               <h3 className="option-title">{option.title}</h3>
 
               {option.items ? (
@@ -367,15 +607,19 @@ export default function HomePage() {
                   <p>
                     {activeTab === "simulation"
                       ? "Ajusta tus parámetros, visualiza la ruta en el mapa y observa cómo impacta el consumo y las emisiones."
-                      : "Observa cada sensor en tiempo real. Toma decisiones impactantes en la conducción y gasto en emisiones."}
+                      : "Observa cada sensor en tiempo real. Toma decisiones informadas sobre operación y emisiones."}
                   </p>
                   <button
                     className="cta-button"
                     onClick={() =>
-                      navigate(activeTab === "simulation" ? "/mapa" : "/telemetry")
+                      navigate(
+                        activeTab === "simulation" ? "/mapa" : "/telemetry"
+                      )
                     }
                   >
-                    {activeTab === "simulation" ? "Iniciar simulación" : "Iniciar Telemetría"}
+                    {activeTab === "simulation"
+                      ? "Iniciar simulación"
+                      : "Iniciar Telemetría"}
                   </button>
                 </>
               )}
@@ -385,9 +629,80 @@ export default function HomePage() {
 
         {/* Bottom Cards */}
         <div className="bottom-section">
-          <div className="bottom-card">Acerca del proyecto</div>
-          <div className="bottom-card">Otros proyectos</div>
-          <div className="contact-card">Contáctanos</div>
+          {/* Acerca del proyecto */}
+          <div className="bottom-card about-card">
+            <h3 className="card-title">Acerca del proyecto</h3>
+            <p>
+              Este proyecto tiene como finalidad realizar un análisis de los indicadores de impacto en los
+              aspectos técnicos, socioeconómicos y ambientales resultantes de la prevista introducción de
+              motocicletas eléctricas o híbridas de bajo cilindraje en el sector del transporte colombiano.
+              La determinación de las variables a considerar en este estudio y de los indicadores se
+              fundamentará en análisis sistemáticos y descriptivos de casos, además de la información
+              pertinente disponible en bases de datos, literatura científica y reportes comerciales. Esta
+              información se empleará para realizar una caracterización detallada de los grupos de interés
+              del sector motociclista colombiano y para definir tres zonas de estudio dentro del territorio
+              colombiano, en las cuales se evaluarán los indicadores de impacto mediante la simulación de
+              escenarios y la experimentación con vehículos. Posteriormente, los hallazgos de la
+              experimentación y la simulación se aplicarán en la elaboración de estrategias orientadas a
+              facilitar la transición hacia una movilidad sostenible, reducir las brechas existentes en el
+              acceso a nuevas tecnologías de movilidad, fortalecer las políticas públicas y descubrir
+              oportunidades para el desarrollo económico y la generación de empleo.
+            </p>
+          </div>
+
+          {/* Workshop: Motocicletas eléctricas en Colombia con carrusel */}
+          <div className="bottom-card center-card projects-card">
+            <div className="projects-carousel">
+              <h3 className="card-title">Workshop: Motocicletas eléctricas en Colombia</h3>
+
+              <div className="projects-image-wrapper">
+                <button
+                  className="carousel-btn prev"
+                  onClick={goPrevProject}
+                  aria-label="Proyecto anterior"
+                >
+                  ‹
+                </button>
+
+                <img
+                  src={projectImages[projectIndex].src}
+                  alt={projectImages[projectIndex].title}
+                  className={`projects-image ${fade ? "fade" : ""}`}
+                />
+
+                <button
+                  className="carousel-btn next"
+                  onClick={goNextProject}
+                  aria-label="Proyecto siguiente"
+                >
+                  ›
+                </button>
+              </div>
+
+              <div className="projects-caption">
+                <h4>{projectImages[projectIndex].title}</h4>
+                <p>{projectImages[projectIndex].description}</p>
+              </div>
+
+              <div className="carousel-dots">
+                {projectImages.map((_, i) => (
+                  <button
+                    key={i}
+                    className={`carousel-dot ${
+                      i === projectIndex ? "active" : ""
+                    }`}
+                    onClick={() => setProjectIndex(i)}
+                    aria-label={`Ir al proyecto ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Contáctanos */}
+          <div className="contact-card">
+            <h3 className="card-title">Contáctanos</h3>
+          </div>
         </div>
       </div>
     </main>
