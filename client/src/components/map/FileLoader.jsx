@@ -115,7 +115,7 @@ export default function FileLoader({
     <div className="loader">
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ fontWeight: 700 }}>Archivo de rutas (pintar)</div>
+          {/*<div style={{ fontWeight: 700 }}>Archivo de rutas (pintar)</div>*/}
           <div className="hint" style={{ fontSize: 12, color: "#6b7280" }}>
             Acepta <code>.json</code> o <code>.geojson</code>. Se dibuja sin usar ORS.
           </div>

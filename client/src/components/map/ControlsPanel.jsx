@@ -63,15 +63,14 @@ export default function ControlsPanel({
       {/* Cargar/limpiar capa importada (solo pintar) */}
       <FileLoader onGeojson={onGeoLoad} onClearGeo={onClearGeo} />
       <div className="small" style={{ color: drawOnly ? "#047857" : "#6b7280", marginTop: 4 }}>
-        Modo: <strong>{drawOnly ? "Dibujar archivo (sin ORS)" : "Manual + ORS"}</strong>
+        {/*Modo: <strong>{drawOnly ? "Dibujar archivo (sin ORS)" : "Manual + ORS"}</strong>*/}
       </div>
 
-      <div className="divider" />
-
-      <div className="kv">
+      
+      {/*<div className="kv">
         <span className="k">Perfil</span>
         <span className="v">Moto eléctrica · conducción</span>
-      </div>
+      </div>*/}
 
       <div className="divider" />
 

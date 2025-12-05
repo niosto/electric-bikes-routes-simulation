@@ -43,7 +43,6 @@ export default function HomePage() {
         "Supervisar en tiempo real",
         "Ver el recorrido actual en el mapa",
         "Analizar desempeño instantáneo",
-        "Detectar alertas críticas",
       ],
     },
     {
@@ -54,7 +53,6 @@ export default function HomePage() {
         "Potencia (W) y voltaje (V)",
         "Tiempo total de recorrido",
         "Mapa con geolocalización dinámica",
-        "Alertas en tiempo real",
       ],
     },
     {
@@ -122,7 +120,7 @@ export default function HomePage() {
 
         .hero-divider {
           width: 1px;
-          height: 40px;
+          height: 100px;
           background: #aaa;
         }
 
