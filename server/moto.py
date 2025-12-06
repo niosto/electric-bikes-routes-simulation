@@ -14,8 +14,9 @@ class Moto:
         self.estado_bateria = self.capacidad_bateria
 
         self.en_carga = False
+        self.historial_carga = [self.en_carga]
         # Umbral de energía para decidir recarga
-        self.umbral_energia = self.capacidad_bateria * 0.95
+        self.umbral_energia = self.capacidad_bateria * 0.9
         self.energia_antes_de_recarga = None
 
         # Estos factores de corrección se usan para calibrar el consumo en el modelo,
@@ -91,11 +92,7 @@ class Moto:
         self.route_data[self.idx]["speeds"] = self.route_data[self.idx]["speeds"][:self.idx_ruta + 1]
         self.route_data[self.idx]["slopes"] = self.route_data[self.idx]["slopes"][:self.idx_ruta + 1]
 
-        self.route_data = (
-            self.route_data[:self.idx + 1] +
-            new_route +
-            self.route_data[self.idx + 1:]
-        )
+        self.route_data = self.route_data[:self.idx + 1] + new_route + self.route_data[self.idx + 1:]
 
         # Reiniciamos índices para seguir sobre la nueva ruta
         self.idx_ruta = 0
@@ -241,6 +238,7 @@ class Moto:
         """
         # 1) Consumir energía en este paso
         if not self.consume_step():
+            self.historial_carga.append(self.en_carga)
             # Fin del segmento actual
             self.duration += self.route_data[self.idx]["duration"]
             self.distance += self.route_data[self.idx]["distance"]
@@ -259,7 +257,7 @@ class Moto:
             return 1
 
         # 2) Revisar batería
-        if self.estado_bateria < self.umbral_energia and not self.en_carga:
+        if self.estado_bateria < self.umbral_energia and not self.en_carga and not self.historial_carga[-1]:
             self.en_carga = True
             return 3  # señal: batería baja, toca recargar
 

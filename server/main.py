@@ -134,6 +134,19 @@ async def routes(body: RoutesRequest):
             try:
                 estaciones = get_estaciones(city)
 
+                example = {
+                "coords":coords,
+                "estaciones":estaciones,
+                "nombre":"moto",
+                "ors_token":ORS_TOKEN,
+                "azure_token":AZURE_TOKEN,
+                "profile":body.options.profile,
+                "city":city,
+                "traffic":traffic
+                }
+                with open(f"resources/examples/ej.json", "w") as f:
+                    json.dump(example,f,indent=2)
+
                 data = await moto_consume(
                     coords=coords,
                     estaciones=estaciones,
@@ -156,7 +169,6 @@ async def routes(body: RoutesRequest):
 
             idx += 1
             out.append({"vehicle_id": v.vehicle_id, **data})
-
     return {"routes": out}
 
 

@@ -1,7 +1,7 @@
 # server/telemetry_exporter.py
 
 import math
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def build_point_telemetry(route_data):
@@ -54,7 +54,7 @@ def build_point_telemetry(route_data):
         energy_kwh.append(cum)
 
     # timestamps sintéticos: 1 punto = 1 segundo
-    base = datetime.utcnow()
+    base = datetime.now(timezone.utc)
     timestamps = [(base + timedelta(seconds=i)).timestamp() for i in range(len(coords))]
 
     # Telemetría final
