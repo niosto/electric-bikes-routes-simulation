@@ -15,7 +15,7 @@ import {
 import { COLORS } from "../../utils/colors.js";
 import { makeColoredIcon } from "../../utils/icons.js";
 import CoordsPanel from "./CoordsPanel.jsx";
-import VITE_API_URL from "../../env"
+import VITE_API_URL from "../../.env"
 
 // ================== CONFIG ICONS ==================
 delete L.Icon.Default.prototype._getIconUrl;
