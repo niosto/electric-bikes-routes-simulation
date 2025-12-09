@@ -64,7 +64,7 @@ export default function MapView({
   setSelectedAlt = () => {},
   importedGeoJSON,
   drawOnly = false,
-  city = "med", // 👈 SOPORTA "med", "bog" y "amva"
+  city = "med",
 }) {
   // Centro depende de la ciudad
   const center = useMemo(() => {
@@ -79,7 +79,7 @@ export default function MapView({
   useEffect(() => {
     async function fetchStations() {
       try {
-        const res = await axios.get(`${API_BASE}/estaciones?city=${city}`);
+        const res = await axios.get(`${VITE_API_URL}/estaciones?city=${city}`);
         const data = res.data;
 
         if (data?.coords && data?.nombre) {
@@ -159,9 +159,9 @@ export default function MapView({
         <RecenterOnCity center={center} />
 
         <LayersControl position="topright">
-          <LayersControl.BaseLayer checked name="CARTO (proxy local)">
+          <LayersControl.BaseLayer checked name="CARTO (proxy)">
             <TileLayer
-              url="http://localhost:8000/tiles/carto/{z}/{x}/{y}.png"
+              url={`${VITE_API_URL}/tiles/carto/{z}/{x}/{y}.png`}
               attribution="© OpenStreetMap contributors · © CARTO"
               detectRetina
               maxZoom={18}
