@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   backend:
     build:
@@ -10,7 +8,6 @@ services:
       - ./server/.env
     ports:
       - "8000:8000"
-    # En modo desarrollo puedes montar el código para hot-reload (si usas --reload)
     # volumes:
     #   - ./server:/app
     restart: unless-stopped

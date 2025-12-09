@@ -1,7 +1,7 @@
 // client/src/services/api.js
 
 // 1) Base URL del backend: viene de .env o cae por defecto a localhost (modo dev)
-const RAW_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const RAW_BASE = import.meta.env.VITE_API_URL;
 
 // Limpia posibles slashes sobrantes al final, tipo "http://ip:8000/"
 const API_BASE = RAW_BASE.replace(/\/+$/, "");

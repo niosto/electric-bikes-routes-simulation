@@ -2,6 +2,12 @@ import numpy as np
 import math
 from openrouteservice import convert
 from geopy.distance import geodesic
+import matplotlib.pyplot as plt 
+import json
+# import io
+# from PIL import Image
+# import selenium
+# import folium
 
 def preprocesar_vectores(velocidades, pendientes, tiempos, coordenadas, puntos_intermedios=10):
     n_original = len(velocidades)
@@ -246,3 +252,101 @@ def get_vel(steps, elevation_data):
                 route["times"].append(round(total_time, 2))
 
     return route
+
+'''
+def mapa(coords, estaciones=[], points=[]):
+    if coords[0][0] < 0:
+        coords = [(lat, lon) for lon, lat in coords]
+
+    m = folium.Map(location=np.mean(coords, axis=0), zoom_start=14, tiles="Cartodb Positron")
+
+    if estaciones:
+        for i in range(len(estaciones)):
+            folium.Marker(
+                location=estaciones[i][::-1],
+                popup="Estacion de carga",
+                icon=folium.Icon(color="purple", icon="info-sign"),
+            ).add_to(m)
+
+    if points:
+        for point in points:
+            folium.Marker(
+                location=point,
+                popup="Punto de Interés",
+                icon=folium.Icon(color="purple", icon="info-sign"),
+            ).add_to(m)
+
+    folium.Marker(
+        location=coords[0],
+        popup="The Waterfront",
+        icon=folium.Icon(color="blue", icon="info-sign"),
+    ).add_to(m)
+
+    folium.PolyLine(coords, color="green", weight=2.5, opacity=1).add_to(m)
+
+    folium.Marker(
+        location=coords[-1],
+        popup="The Waterfront",
+        icon=folium.Icon(color="blue", icon="info-sign"),
+    ).add_to(m)
+    
+    return m
+
+def graficar(data):
+    import matplotlib.pyplot as plt 
+
+    import io
+    from PIL import Image
+    import selenium
+
+    coords =  data["geometry"]["coordinates"]
+    estaciones = [coord["station_coords"] for coord in data["charge_points"]]
+
+
+    m = mapa(coords=coords, estaciones=estaciones)
+    img_data = m._to_png(3)
+    img = Image.open(io.BytesIO(img_data))
+    img.save('resources/examples/simulation/ruta.png')
+
+    speeds = data["properties"]["speeds"]
+    potencia = data["properties"]["potencia"]
+    soc = data["properties"]["soc"]
+    categorias = ["Emisiones de combustión", "Emisiones eléctricas"]
+    consumo = np.array([data["properties"]["emisiones_combustion"],data["properties"]["emisiones_electricas"]]) / 1000
+
+
+    plt.style.use("default")
+    fig, ax = plt.subplots(2, 2, figsize=(12,8))
+
+    ax[0,0].plot(speeds, color="blue",  linewidth=1.5)
+    ax[0,0].set_title("Velocidad (m/s)")
+    ax[0,0].set_ylabel("Velocidad (m/s)")
+    ax[0,0].set_xlabel("Paso")
+    ax[0,0].grid(True, alpha=0.3)
+
+
+    ax[0,1].plot(soc, color="red",  linewidth=1.5)
+    ax[0,1].set_title("SOC (kWh)")
+    ax[0,1].set_ylabel("SOC (kWh)")
+    ax[0,1].set_xlabel("Paso")
+    ax[0,1].grid(True, alpha=0.3)
+
+    ax[1,0].plot(potencia, color="yellow",  linewidth=1.5)
+    ax[1,0].set_title("Potencia (W)")
+    ax[1,0].set_ylabel("Potencia (W)")
+    ax[1,0].set_xlabel("Paso")
+    ax[1,0].grid(True, alpha=0.3)
+
+    ax[1,1].bar(categorias, consumo, color=["orange","green"], alpha=0.7, edgecolor='black')
+    ax[1,1].set_title("Emisiones Eléctricas vs Combustión")
+    ax[1,1].set_ylabel("CO₂ (kg)")
+    ax[1,1].set_xlabel("Categorias")
+    ax[1,1].grid(True, alpha=0.3, axis='y')
+
+
+    plt.tight_layout()
+
+    plt.savefig("resources/examples/simulation/graficas.png", dpi=150)
+    plt.show()
+    plt.close()
+'''

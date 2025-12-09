@@ -123,6 +123,9 @@ async def routes(body: RoutesRequest):
             status_code=500, detail="Tokens no configurads"
         )
     
+    with open(f"resources/examples/ej_in.json", "w") as f:
+        json.dump(body,f,indent=2)
+
     out: List[Dict[str, Any]] = []
     async with httpx.AsyncClient(timeout=30) as client:
         for v in body.vehicles:
@@ -133,19 +136,6 @@ async def routes(body: RoutesRequest):
                 continue
             try:
                 estaciones = get_estaciones(city)
-
-                example = {
-                "coords":coords,
-                "estaciones":estaciones,
-                "nombre":"moto",
-                "ors_token":ORS_TOKEN,
-                "azure_token":AZURE_TOKEN,
-                "profile":body.options.profile,
-                "city":city,
-                "traffic":traffic
-                }
-                with open(f"resources/examples/ej.json", "w") as f:
-                    json.dump(example,f,indent=2)
 
                 data = await moto_consume(
                     coords=coords,
@@ -161,6 +151,9 @@ async def routes(body: RoutesRequest):
 
                 with open(f"resources/examples/ej_out.json", "w") as f:
                     json.dump(data,f,indent=2)
+
+                #from utils import graficar 
+                #graficar(**data)
 
             except httpx.RequestError as e:
                 raise HTTPException(
