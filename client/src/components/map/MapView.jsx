@@ -79,9 +79,7 @@ export default function MapView({
   useEffect(() => {
     async function fetchStations() {
       try {
-        const res = await axios.get(
-          `http://localhost:8000/estaciones?city=${city}`
-        );
+        const res = await axios.get(`${API_BASE}/estaciones?city=${city}`);
         const data = res.data;
 
         if (data?.coords && data?.nombre) {
