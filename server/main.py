@@ -120,20 +120,23 @@ async def routes(body: RoutesRequest):
 
     if not ORS_TOKEN and not AZURE_TOKEN:
         raise HTTPException(
-            status_code=500, detail="Tokens no configurads"
+            status_code=500, detail="Tokens no configurados"
         )
-    
-    with open(f"resources/examples/ej_in.json", "w") as f:
-        json.dump(body,f,indent=2)
+
+    # 🔥 FIX: Convertimos el objeto Pydantic a dict antes de guardarlo
+    with open("resources/examples/ej_in.json", "w") as f:
+        json.dump(body.model_dump(), f, indent=2)
 
     out: List[Dict[str, Any]] = []
     async with httpx.AsyncClient(timeout=30) as client:
         for v in body.vehicles:
             if len(v.waypoints) < 2:
                 continue
+
             coords = _to2d([wp.coordinates for wp in v.waypoints])
             if len(coords) < 2:
                 continue
+
             try:
                 estaciones = get_estaciones(city)
 
@@ -149,11 +152,9 @@ async def routes(body: RoutesRequest):
                     traffic=traffic
                 )
 
-                with open(f"resources/examples/ej_out.json", "w") as f:
-                    json.dump(data,f,indent=2)
-
-                #from utils import graficar 
-                #graficar(**data)
+                # Guardar salida de ejemplo sin cambios (data ya es dict)
+                with open("resources/examples/ej_out.json", "w") as f:
+                    json.dump(data, f, indent=2)
 
             except httpx.RequestError as e:
                 raise HTTPException(
@@ -162,8 +163,8 @@ async def routes(body: RoutesRequest):
 
             idx += 1
             out.append({"vehicle_id": v.vehicle_id, **data})
-    return {"routes": out}
 
+    return {"routes": out}
 
 # =================== RUTAS: GeoJSON FeatureCollection ===================
 @app.post("/routes/geojson")
