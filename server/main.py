@@ -123,7 +123,6 @@ async def routes(body: RoutesRequest):
             status_code=500, detail="Tokens no configurados"
         )
 
-    # 🔥 FIX: Convertimos el objeto Pydantic a dict antes de guardarlo
     with open("resources/examples/ej_in.json", "w") as f:
         json.dump(body.model_dump(), f, indent=2)
 

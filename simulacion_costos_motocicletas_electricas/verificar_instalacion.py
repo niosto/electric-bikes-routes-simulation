@@ -33,13 +33,13 @@ def main():
     errores = []
     
     # Verificar script principal
-    print("📄 Archivos principales:")
+    print("Archivos principales:")
     if not verificar_archivo("calcular_costo_viaje_aleatorio.py", "Script principal"):
         errores.append("Script principal no encontrado")
     print()
     
     # Verificar carpeta del modelo
-    print("📁 Carpeta del modelo:")
+    print("Carpeta del modelo:")
     if not verificar_carpeta("modelo_motocicleta_electrica", "Carpeta del modelo"):
         errores.append("Carpeta 'modelo_motocicleta_electrica' no encontrada")
     else:
@@ -50,7 +50,7 @@ def main():
     print()
     
     # Verificar shapefiles
-    print("🗺️  Shapefiles:")
+    print("Shapefiles:")
     shapefiles_zonas = ["ZONAS SIT.shp", "ZONAS SIT.shx", "ZONAS SIT.dbf", "ZONAS SIT.prj"]
     for shp in shapefiles_zonas:
         if not verificar_archivo(shp, f"Shapefile ZONAS SIT ({shp})"):
@@ -63,7 +63,7 @@ def main():
     print()
     
     # Verificar datos
-    print("📊 Archivos de datos:")
+    print("Archivos de datos:")
     if not verificar_archivo("ENPH_Rev.xlsx", "Datos de canasta familiar"):
         errores.append("Archivo ENPH_Rev.xlsx no encontrado")
     if not verificar_archivo("viajes_motos_procesados.csv", "Base de datos de viajes"):
@@ -71,7 +71,7 @@ def main():
     print()
     
     # Verificar dependencias
-    print("📦 Verificando dependencias de Python:")
+    print("Verificando dependencias de Python:")
     dependencias = [
         "pandas", "numpy", "geopandas", "matplotlib", 
         "geopy", "requests", "folium", "openpyxl", "scipy"
@@ -88,7 +88,7 @@ def main():
     
     if faltantes:
         print()
-        print("⚠️  Para instalar las dependencias faltantes, ejecuta:")
+        print("Para instalar las dependencias faltantes, ejecuta:")
         print("   pip install -r requirements.txt")
         errores.append(f"Dependencias faltantes: {', '.join(faltantes)}")
     print()
@@ -96,7 +96,7 @@ def main():
     # Resumen
     print("="*70)
     if errores:
-        print("❌ VERIFICACIÓN FALLIDA")
+        print("VERIFICACIÓN FALLIDA")
         print()
         print("Errores encontrados:")
         for error in errores:
@@ -104,7 +104,7 @@ def main():
         print()
         sys.exit(1)
     else:
-        print("✅ VERIFICACIÓN EXITOSA")
+        print("VERIFICACIÓN EXITOSA")
         print()
         print("Todos los archivos necesarios están presentes.")
         print("Puedes ejecutar la simulación con:")
