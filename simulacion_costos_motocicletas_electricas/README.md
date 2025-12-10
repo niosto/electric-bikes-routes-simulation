@@ -2,7 +2,7 @@
 
 Este paquete contiene todo lo necesario para ejecutar la simulación de cálculo de costos de viajes en motocicleta (eléctrica vs. combustión) con análisis de impacto en la canasta familiar.
 
-## 📋 Descripción
+## Descripción
 
 La simulación selecciona aleatoriamente un viaje de motocicleta de la base de datos de la Encuesta de Movilidad (EOD 2017), calcula coordenadas aleatorias dentro de los municipios de origen y destino, obtiene rutas reales usando OSRM, y calcula:
 
@@ -12,7 +12,7 @@ La simulación selecciona aleatoriamente un viaje de motocicleta de la base de d
 - Características de la moto durante el recorrido
 - Mapa HTML interactivo de la ruta
 
-## 📁 Estructura de Archivos
+## Estructura de Archivos
 
 ```
 simulacion_costos_motos/
@@ -28,7 +28,7 @@ simulacion_costos_motos/
 └── README.md                           # Este archivo
 ```
 
-## 🚀 Instalación
+## Instalación
 
 ### 1. Requisitos Previos
 
@@ -53,7 +53,7 @@ brew install gdal
 sudo apt-get install gdal-bin libgdal-dev
 ```
 
-## ▶️ Uso
+## Uso
 
 ### Ejecución Básica
 
@@ -98,7 +98,7 @@ python calcular_costo_viaje_aleatorio.py
    - Mapa HTML interactivo (`ruta_viaje_mapa.html`)
    - Gráfica de características de la moto (`grafica_caracteristicas_moto.png`)
 
-## 📊 Archivos de Salida
+## Archivos de Salida
 
 Después de ejecutar el script, se generarán:
 
@@ -112,7 +112,7 @@ Después de ejecutar el script, se generarán:
   - Fuerzas que actúan sobre la moto
   - Estadísticas del recorrido
 
-## ⚙️ Configuración
+## Configuración
 
 ### Precios de Combustible y Electricidad
 
@@ -131,7 +131,7 @@ Puedes modificar estos valores según necesites.
 
 El script usa el servicio público de OSRM (`http://router.project-osrm.org`). Si necesitas usar un servidor propio, modifica la función `obtener_ruta_osrm()` (línea ~190).
 
-## 🔍 Datos Requeridos
+## Datos Requeridos
 
 ### Archivos Necesarios
 
@@ -151,7 +151,7 @@ El script usa el servicio público de OSRM (`http://router.project-osrm.org`). S
    - `ZONAS SIT`: Zonas de Medellín y Área Metropolitana
    - `zat`: Zonas de Bogotá
 
-## 🐛 Solución de Problemas
+## Solución de Problemas
 
 ### Error: "No se encontró la carpeta 'modelo_motocicleta_electrica'"
 
@@ -169,17 +169,17 @@ Asegúrate de que todos los archivos del shapefile estén presentes (`.shp`, `.s
 
 El script tiene un mecanismo de respaldo que usa distancia geodésica si OSRM no está disponible. Si el problema persiste, verifica tu conexión a internet.
 
-## 📝 Notas
+## Notas
 
 - El script selecciona viajes aleatorios, por lo que cada ejecución puede dar resultados diferentes.
 - Los cálculos de consumo están basados en un modelo físico de motocicleta con parámetros específicos (masa, coeficiente de arrastre, etc.).
 - Las rutas se obtienen de OSRM, que proporciona rutas reales por carretera cuando está disponible.
 
-## 📧 Soporte
+## Soporte
 
 Para problemas o preguntas, revisa los comentarios en el código o consulta la documentación de las librerías utilizadas.
 
-## 📄 Licencia
+## Licencia
 
 Este código es parte de un proyecto de investigación sobre consumo energético en motocicletas.
 
