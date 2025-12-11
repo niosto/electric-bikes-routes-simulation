@@ -288,9 +288,7 @@ Versión alternativa que recibe rutas completas en formato GeoJSON.
 - **Banco Interamericano de Desarrollo (BID)**
 
 **Autores:**
-- Alejandro Garcés Ramírez  
 - Ana María Ortega Álvarez
-- Nicolás Ospina Torres  
 - Felipe Mendoza Giraldo
 - Gustavo Adolfo García Cruz
 - John Jairo García Rendón
@@ -300,6 +298,10 @@ Versión alternativa que recibe rutas completas en formato GeoJSON.
 - Juan Pablo González Alzate
 - Santiago Bernal del Río
 
+   **Monitores:**  
+      - Nicolás Ospina Torres  
+      - Alejandro Garcés Ramírez  
+  
 **Coordinador:**
 Gilberto Osorio Gómez
 
