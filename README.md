@@ -287,10 +287,21 @@ Versión alternativa que recibe rutas completas en formato GeoJSON.
 **En colaboración con:**
 - **Banco Interamericano de Desarrollo (BID)**
 
-**Investigadores principales:**
-- Juan Pablo González   
+**Autores:**
+- Alejandro Garcés Ramírez  
+- Ana María Ortega Álvarez
 - Nicolás Ospina Torres  
-- Alejandro Garcés Ramírez   
+- Felipe Mendoza Giraldo
+- Gustavo Adolfo García Cruz
+- John Jairo García Rendón
+- José Fernando Martínez Cadavid
+- José Miguel Arias Mejía
+- Juan Manuel Aristizábal Tamayo
+- Juan Pablo González Alzate
+- Santiago Bernal del Río
+
+**Autores:**
+Gilberto Osorio Gómez
 
 ---
 
