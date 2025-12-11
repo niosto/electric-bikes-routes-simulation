@@ -282,7 +282,7 @@ Versión alternativa que recibe rutas completas en formato GeoJSON.
 ## Créditos
 
 **Proyecto desarrollado por:**
-- **Semillero GRID** – Universidad EAFIT
+- **Universidad EAFIT**
 
 **En colaboración con:**
 - **Banco Interamericano de Desarrollo (BID)**
