@@ -300,7 +300,7 @@ Versión alternativa que recibe rutas completas en formato GeoJSON.
 - Juan Pablo González Alzate
 - Santiago Bernal del Río
 
-**Autores:**
+**Coordinador:**
 Gilberto Osorio Gómez
 
 ---
